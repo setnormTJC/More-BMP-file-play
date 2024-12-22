@@ -228,6 +228,7 @@ BMPImage getImageData(const char* imageData, unsigned long long FILE_SIZE)
 
     //theImage.height += (unsigned int) image
 
+    ///
     
     return theImage;
 }
