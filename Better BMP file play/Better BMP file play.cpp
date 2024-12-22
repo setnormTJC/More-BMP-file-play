@@ -181,6 +181,16 @@ const char* readBMPFile(const char* filename, unsigned long long FILE_SIZE)
 
 void myHexDump(const char* imageData, unsigned long long FILE_SIZE)
 {
+    //display 0 - 15 on top row (for easier counting of indices): 
+
+    for (int i = 0; i < 16; ++i)
+    {
+        std::cout << std::left << std::setw(3);
+        std::cout << i;
+    }
+    std::cout << "\n";
+    std::cout << std::string(48, '=');
+
     for (int i = 0; i < FILE_SIZE; ++i)
     {
         std::cout << std::hex;
@@ -190,17 +200,61 @@ void myHexDump(const char* imageData, unsigned long long FILE_SIZE)
             std::cout << "\n";
         }
         std::cout << std::setfill('0');
-        std::cout << std::left << std::setw(2);
+        std::cout << std::right << std::setw(2);
         std::cout << (unsigned int)(unsigned char)imageData[i] << " ";        //make space between every BYTE 
     }
 
     std::cout << "\n\n";
+
+    //for (int i = 0; i < FILE_SIZE; ++i)
+    //{
+    //    std::cout << (void*)imageData << "\n";
+    //    imageData++;  1 Byte forward each step (ex from 0x0 to 0x1, 0x1 to 0x2, etc. 
+    //}
+    
+
+}
+
+void myHexDump_nonConst(char* imageData, unsigned long long FILE_SIZE)
+{
+    //display 0 - 15 on top row (for easier counting of indices): 
+
+    for (int i = 0; i < 16; ++i)
+    {
+        std::cout << std::left << std::setw(3);
+        std::cout << i;
+    }
+    std::cout << "\n";
+    std::cout << std::string(48, '=');
+
+    for (int i = 0; i < FILE_SIZE; ++i)
+    {
+        std::cout << std::hex;
+        //make new line every 10 Bytes (typical hex-dump format, I think)
+        if (i % 16 == 0)
+        {
+            std::cout << "\n";
+        }
+        std::cout << std::setfill('0');
+        std::cout << std::right << std::setw(2);
+        std::cout << (unsigned int)(unsigned char)imageData[i] << " ";        //make space between every BYTE 
+    }
+
+    std::cout << "\n\n";
+
+    //for (int i = 0; i < FILE_SIZE; ++i)
+    //{
+    //    std::cout << (void*)imageData << "\n";
+    //    imageData++;  1 Byte forward each step (ex from 0x0 to 0x1, 0x1 to 0x2, etc. 
+    //}
+
+
 }
 
 
 struct BMPImage
 {
-    char* imageData;
+    char* pixelData;
     unsigned int width, height;
 
     unsigned int offsetOfPixelData;
@@ -209,6 +263,8 @@ struct BMPImage
     {
         os << "height:\twidth\toffset to pixel data:\n";
         os << image.height << image.width << image.offsetOfPixelData << "\n";
+
+        //for (int )
         return os; 
     }
 };
@@ -218,19 +274,39 @@ BMPImage getImageData(const char* imageData, unsigned long long FILE_SIZE)
     BMPImage theImage;
 
 
-    //theImage.height = (unsigned int)(unsigned char) imageData[21];
-    //std::cout << std::hex << (unsigned int)(unsigned char)imageData[21] << "\n";
+    /*data is stored little endian, so successive indices get left bit shifted (multiplied by the given power of 2)*/
+    theImage.width =
+        (unsigned int)(unsigned char)imageData[18] |
+        ((unsigned int)(unsigned char)imageData[19] << 8) |
+        ((unsigned int)(unsigned char)imageData[20] << 16) |
+        ((unsigned int)(unsigned char)imageData[21] << 24);
+   
+    theImage.height = 
+        (unsigned int)(unsigned char)imageData[22] |
+        ((unsigned int)(unsigned char)imageData[23] << 8) |
+        ((unsigned int)(unsigned char)imageData[24] << 16) |
+        ((unsigned int)(unsigned char)imageData[25] << 24);
+    //bitwise OR must be used here - NOT addition (I didn't revisit details of this - just accept it)
 
-    //theImage.width = (unsigned int)(unsigned char)imageData[18] |
-    //    ((unsigned int)(unsigned char)imageData[19] << 8) |
-    //    ((unsigned int)(unsigned char)imageData[20] << 16) |
-    //    ((unsigned int)(unsigned char)imageData[21] << 24);
+    theImage.offsetOfPixelData = 
+        (unsigned int)(unsigned char)imageData[10] |
+        ((unsigned int)(unsigned char)imageData[11] << 8) |
+        ((unsigned int)(unsigned char)imageData[12] << 16) |
+        ((unsigned int)(unsigned char)imageData[13] << 24);
 
-    //theImage.height += (unsigned int) image
+    //theImage.imageData = imageData[theImage.offsetOfPixelData];
 
-    ///
-    
+
     return theImage;
+}
+
+void writeNewImage(const char* newFileName, char* newImageData, unsigned long long FILE_SIZE)
+{
+    std::ofstream fout{ newFileName, std::ios::binary };
+
+    fout.write(newImageData, FILE_SIZE);
+    
+    fout.close(); 
 }
 
 int main()
@@ -248,9 +324,42 @@ int main()
     BMPImage theImage = getImageData(imageData, FILE_SIZE); 
    
 
-    std:: cout << theImage << "\n";
+    char* newImageData = new char[FILE_SIZE]; 
+
+    //copy header info: 
+    for (int i = 0; i < theImage.offsetOfPixelData; ++i)
+    {
+        newImageData[i] = imageData[i]; 
+    }
+
+    //modify all ff pixels to 00 (just a "toy" image manipulation): 
+    for (int i = theImage.offsetOfPixelData; i < FILE_SIZE; ++i)
+    {
+        if (imageData[i] == 0x00)
+        {
+            newImageData[i] = 0x99; 
+        }
+
+        else
+        {
+            newImageData[i] = imageData[i];
+        }
+    }
+
+    std::cout << "\n\nNew image data:\n";
+    myHexDump_nonConst(newImageData, FILE_SIZE);
+
+    const char* newFileName = "new.bmp";
+
+    writeNewImage(newFileName, newImageData, FILE_SIZE);
+
+    
+
+    //std:: cout << theImage << "\n";
 
 
     delete[] imageData; 
+
+    delete[] newImageData; 
 }
 

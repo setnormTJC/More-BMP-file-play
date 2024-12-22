@@ -18,5 +18,11 @@
     <ClCompile Include="More BMP file play - a 5 x5 smiley.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Code from ImHex editor for BMP file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HelloWorld - for testing ImHex Disassembler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

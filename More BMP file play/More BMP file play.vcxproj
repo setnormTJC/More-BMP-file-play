@@ -127,6 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Code from ImHex editor for BMP file.cpp" />
+    <ClCompile Include="HelloWorld - for testing ImHex Disassembler.cpp" />
     <ClCompile Include="More BMP file play - a 5 x5 smiley.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
