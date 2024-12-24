@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{c7853978-b2f0-4471-ad5f-febb8be15ceb}</ProjectGuid>
-    <RootNamespace>BetterBMPfileplay</RootNamespace>
+    <ProjectGuid>{f1b6f46b-93f0-4ee4-993f-0be30bc51366}</ProjectGuid>
+    <RootNamespace>Dec23</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -131,10 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Better BMP file play.cpp" />
+    <ClCompile Include="Dec23.cpp" />
+    <ClCompile Include="ImageBMP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="someBMPImageFunctions.h" />
+    <ClInclude Include="ImageBMP.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

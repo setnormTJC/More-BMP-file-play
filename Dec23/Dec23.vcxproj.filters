@@ -15,12 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Better BMP file play.cpp">
+    <ClCompile Include="Dec23.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageBMP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="someBMPImageFunctions.h">
+    <ClInclude Include="ImageBMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

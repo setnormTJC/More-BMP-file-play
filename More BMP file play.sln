@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "More BMP file play", "More BMP file play\More BMP file play.vcxproj", "{DB3AEE62-B8D2-4516-AA51-E8C9DAD390BD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Better BMP file play", "Better BMP file play\Better BMP file play.vcxproj", "{C7853978-B2F0-4471-AD5F-FEBB8BE15CEB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dec23", "Dec23\Dec23.vcxproj", "{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{C7853978-B2F0-4471-AD5F-FEBB8BE15CEB}.Release|x64.Build.0 = Release|x64
 		{C7853978-B2F0-4471-AD5F-FEBB8BE15CEB}.Release|x86.ActiveCfg = Release|Win32
 		{C7853978-B2F0-4471-AD5F-FEBB8BE15CEB}.Release|x86.Build.0 = Release|Win32
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Debug|x64.ActiveCfg = Debug|x64
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Debug|x64.Build.0 = Debug|x64
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Debug|x86.ActiveCfg = Debug|Win32
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Debug|x86.Build.0 = Debug|Win32
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Release|x64.ActiveCfg = Release|x64
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Release|x64.Build.0 = Release|x64
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Release|x86.ActiveCfg = Release|Win32
+		{F1B6F46B-93F0-4EE4-993F-0BE30BC51366}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
