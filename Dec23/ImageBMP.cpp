@@ -555,11 +555,6 @@ ChessImageBMP::ChessImageBMP()
 void ChessImageBMP::drawEmptyChessBoard()
 {
 
-
-	const int BORDER_SIZE = boardDimension/30; //512 / 30 ~=  15
-	const int SQUARE_WIDTH = boardDimension / 9; //closer to 8...
-
-
 	for (int col = 0; col < 8; ++col)
 	{
 		for (int row = 0; row < 8; ++row)
@@ -745,6 +740,47 @@ void ChessImageBMP::drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatr
 			//else leave it be
 		}
 	}
+}
+
+
+void ChessImageBMP::generatePositionsToImageCoordinatesMap()
+{
+	//first make positions (positions likely to be a member variable of the ChessGame class,
+	// but only needed "once" in this ChessImageBMP class, I suppose 
+
+	const string ranks = "ABCDEFGH"; 
+	const string files = "12345678"; 
+
+	/*a 2D vector*/
+	vector<vector<string>> positions(ranks.size(),vector<string>{files.size()});
+
+	//cout << positions.size() << "\t" << positions.at(0).size() << "\n";
+
+
+	for (int i = 0; i < ranks.size(); ++i)
+	{
+		for (int j = 0; j < files.size(); ++j)
+		{
+			positions[i][j] = string(1, ranks[i]) + files[j];
+			//positions.at(i).at(j) = to_string(ranks.at(i)) + to_string(files.at(j) ); 
+			// //nope -to_string does not handle chars
+			
+			//cout << left << setw(3) << positions.at(i).at(j); 
+
+			positionsToImageCoordinates.insert
+			(
+				{ 
+					positions[i][j], 
+					std::pair<int, int>
+						{SQUARE_WIDTH/2 + SQUARE_WIDTH * i, 
+						SQUARE_WIDTH/2 + SQUARE_WIDTH * j} 
+				}
+			);
+		}
+		//cout << "\n";
+	}
+	
+
 }
 
 

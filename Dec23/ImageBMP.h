@@ -9,9 +9,10 @@
 #include<array>
 #include<algorithm>
 #include<map> 
+#include<iomanip> 
 
 using std::cout, std::ifstream, std::ofstream, std::vector, std::string, std::ios, std::ostream, std::array; 
-using std::swap, std::map; 
+using std::swap, std::map, std::pair, std::setw, std::left, std::to_string; 
 
 
 class FileHeader
@@ -42,7 +43,8 @@ class InfoHeader
 {
 	unsigned int infoHeaderSize = 0x00'00'00'28; //indices 14 - 17, in bytes
 	short planes = 0x00'01; //indices 26 - 27 ["always" 1 (meaning unclear)] 
-	short bitsPerPixel = 0x00'20; //indices 28 - 29 (32 bits - 24 for G,B,R, and 8 for Alpha)
+	
+	short bitsPerPixel = 0x00'20; //CAREFUL! not always 32! -> indices 28 - 29 (32 bits - 24 for G,B,R, and 8 for Alpha)
 	unsigned int compressionMethod = 0x00'00'00'00; //indices 30 - 33
 	unsigned int sizeOfPixelData;// = imageWidth * imageHeight * (bitsPerPixel / 8); //indices 34 - 37
 	vector<int> remainingHeaderFields =
@@ -161,7 +163,14 @@ class ChessImageBMP : public ImageBMP
 {
 	static const unsigned int boardDimension = 720; 
 	//be wary - not using static const here will pass value of 0 to parent (ImageBMP) constructor
+
+	const int BORDER_SIZE = boardDimension / 30; //512 / 30 ~=  15
+	const int SQUARE_WIDTH = boardDimension / 9; //closer to 8...
+
 public: 
+	/*Ex: A1 is at 0,0; G8 is at 720, 720*/
+	map<string, pair<int, int> > positionsToImageCoordinates{};
+
 	ChessImageBMP(); 
 	void drawEmptyChessBoard(); 
 
@@ -177,6 +186,7 @@ public:
 
 	void drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y);
 
+	void generatePositionsToImageCoordinatesMap();
 };
 
 
