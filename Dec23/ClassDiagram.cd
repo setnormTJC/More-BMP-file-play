@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="FileHeader">
+    <Position X="2" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAEAAAAAAAAAgAAAAAAAACAAAAAAAAgAAAAA=</HashCode>
+      <FileName>ImageBMP.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageBMP">
+    <Position X="3" Y="1" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQACIAAABAIAAAAACAACAAAAAAAAA=</HashCode>
+      <FileName>ImageBMP.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="fileHeader" />
+      <Field Name="infoHeader" />
+      <Field Name="pixelData" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="InfoHeader">
+    <Position X="4" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAACAAgAAAAAgAAKAgAAAgAAAAiAAAAgAAA=</HashCode>
+      <FileName>ImageBMP.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PixelData">
+    <Position X="6.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAQAAAAAAA=</HashCode>
+      <FileName>ImageBMP.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
