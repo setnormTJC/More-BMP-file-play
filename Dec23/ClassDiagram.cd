@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="FileHeader">
-    <Position X="2" Y="5.25" Width="1.5" />
+    <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAAAAAAAAEAAAAAAAAAgAAAAAAAACAAAAAAAAgAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ImageBMP">
-    <Position X="3" Y="1" Width="4.25" />
+    <Position X="4" Y="1" Width="4.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAQACIAAABAIAAAAACAACAAAAAAAAA=</HashCode>
+      <HashCode>ACAAACAAAACIAAAQAAIAAABAMBAAAACAACAAAAAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -20,18 +20,39 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="InfoHeader">
-    <Position X="4" Y="5.25" Width="1.5" />
+    <Position X="0.5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAEAAACAAgAAAAAgAAKAgAAAgAAAAiAAAAgAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PixelData">
-    <Position X="6.5" Y="5.25" Width="1.5" />
+    <Position X="10" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAQAAAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="ChessGame">
+    <Position X="14.75" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAIAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ChessGame.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChessImageBMP">
+    <Position X="5.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAiAAgQAAAAAAQAgAAAQAAAAoAAAACAADA=</HashCode>
+      <FileName>ChessImageBMP.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Color">
+    <Position X="9.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAQgAAAAAA=</HashCode>
+      <FileName>ImageBMP.h</FileName>
+    </TypeIdentifier>
+  </Struct>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

@@ -132,12 +132,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChessGame.cpp" />
+    <ClCompile Include="ChessImageBMP.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ImageBMP.cpp" />
+    <ClCompile Include="sharedFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChessGame.h" />
+    <ClInclude Include="ChessImageBMP.h" />
     <ClInclude Include="ImageBMP.h" />
+    <ClInclude Include="sharedFunctions.h" />
     <ClInclude Include="someImageBMPTestingFunctions.h" />
   </ItemGroup>
   <ItemGroup>

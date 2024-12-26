@@ -118,6 +118,11 @@ ImageBMP::ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Colo
 	}
 }
 
+ImageBMP::ImageBMP(const string& filepath)
+{
+	readImageBMP(filepath);
+}
+
 void ImageBMP::readImageBMP(string inputFilename)
 {
 	ifstream fin{ inputFilename, ios::binary };
@@ -125,6 +130,7 @@ void ImageBMP::readImageBMP(string inputFilename)
 	if (!fin)
 	{
 		cout << "File " << inputFilename << " not found.\n";
+		std::cin.get(); 
 		return; 
 	}
 
@@ -264,9 +270,9 @@ void ImageBMP::readInfoHeaderFromFile(ifstream& fin)
 	/*a "safety check" here:*/
 	if (infoHeader.infoHeaderSize != 40)
 	{
-		cout << "Hey! Listen!\n"; 
-		cout << "Info header size is not 40! - it is " << infoHeader.infoHeaderSize << "\n";
-		std::cin.get(); 
+		//cout << "Hey! Listen!\n"; 
+		//cout << "Info header size is not 40! - it is " << infoHeader.infoHeaderSize << "\n";
+		//std::cin.get(); 
 	}
 
 
@@ -309,8 +315,8 @@ void ImageBMP::readInfoHeaderFromFile(ifstream& fin)
 	/*another "safety check" here:*/
 	if (infoHeader.bitsPerPixel != 32)
 	{
-		cout << "Hey! Listen!\n";
-		cout << "bitsPerPixel is not 32 (gbra)! - it is " << infoHeader.bitsPerPixel << "\n";
+		//cout << "Hey! Listen!\n";
+		//cout << "bitsPerPixel is not 32 (gbra)! - it is " << infoHeader.bitsPerPixel << "\n";
 		//std::cin.get();
 	}
 
@@ -562,6 +568,11 @@ void ImageBMP::setPixelToColor_withThickness(unsigned int x, unsigned int y, con
 
 }
 
+/*purpose: to gain experience with "scanline" algorithms*/
+void ImageBMP::drawAndFillAnIrregularShape()
+{
+}
+
 
 unsigned int InfoHeader::getInfoHeaderSize() const
 {
@@ -607,243 +618,6 @@ unsigned int Color::convertToUnsignedInt()
 }
 
 
-ChessImageBMP::ChessImageBMP()
-	:ImageBMP(boardDimension, boardDimension,ColorEnum::BoardBorder)
-{
-	//just called the parent constructor: 
-
-}
-
-void ChessImageBMP::drawEmptyChessBoard()
-{
-
-	for (int col = 0; col < 8; ++col)
-	{
-		for (int row = 0; row < 8; ++row)
-		{
-			ColorEnum squareColor = ((col + row) % 2 == 0) ? ColorEnum::LightSquareColor : ColorEnum::DarkSquareColor; 
-
-			fillRectangleWithColor
-			(
-				BORDER_SIZE + SQUARE_WIDTH * col + 10, //NOTE: the 10 here "works" for boardDimension = 720 
-				BORDER_SIZE + SQUARE_WIDTH * row + 10,
-				SQUARE_WIDTH,
-				SQUARE_WIDTH,
-				squareColor
-			);
-		}
-	}
-
-	/*Note: darkSquareColor ignored for now by drawRectangleOutline function def.*/
-	drawRectangleOutline(0 + BORDER_SIZE, 0 + BORDER_SIZE, 
-		boardDimension / 8, boardDimension / 8, Color{0xFF'00'00'00});
-
-}
-
-void ChessImageBMP::drawA(unsigned int x, unsigned int y, const Color& color)
-{
-
-	const int ROWS_FOR_A = 16;
-	const int COLS_FOR_A = 16;
-
-	vector<vector<char>> matrixForA =
-	{
-		{' ',' ',' ',' ',' ',' ',' ','A','A',' ',' ',' ',' ',' ',' ',' '},
-		{' ',' ',' ',' ',' ',' ','A',' ',' ','A',' ',' ',' ',' ',' ',' '},
-		{' ',' ',' ',' ',' ','A',' ',' ',' ',' ','A',' ',' ',' ',' ',' '},
-		{' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' '},
-		{' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ',' ','A',' ',' ',' '},
-		{' ',' ','A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A',' ',' '},
-		{' ','A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A',' '},
-		{'A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'},
-		{'A',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A'}
-	};
-
-	auto rotatedA = rotateMatrixClockwise(matrixForA, ROWS_FOR_A, COLS_FOR_A);
-
-
-	for (int row = 0; row < COLS_FOR_A; ++row)
-	{
-		for (int col = 0; col < ROWS_FOR_A; ++col)
-		{
-			if (rotatedA[row][col] != ' ')
-			{
-				setPixelToColor_withThickness(x + row, y + col, color, 1);
-			}
-		}
-	}
-		
-}
-
-void ChessImageBMP::drawB(unsigned int x, unsigned int y, const Color& color)
-{
-	const int ROWS_FOR_B = 16;
-	const int COLS_FOR_B = 16;
-
-	vector<vector<char>> matrixForB =
-	{
-		{'B','B','B','B','B','B','B','B',' ',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B','B','B','B','B','B','B','B',' ',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B',' ',' ',' ',' ',' ',' ',' ','B',' ',' ',' ',' ',' ',' ',' '},
-		{'B','B','B','B','B','B','B','B',' ',' ',' ',' ',' ',' ',' ',' '}
-	};
-
-	auto rotatedB = rotateMatrixClockwise(matrixForB, ROWS_FOR_B, COLS_FOR_B);
-
-	for (int row = 0; row < COLS_FOR_B; ++row)
-	{
-		for (int col = 0; col < ROWS_FOR_B; ++col)
-		{
-			if (rotatedB[row][col] != ' ')
-			{
-				setPixelToColor_withThickness(x + row, y + col, color, 1);
-			}
-		}
-	}
-}
-
-/*NOTE: this method is assuming magic number 16 for the number of rows and columns in letter bitmap*/
-void ChessImageBMP::drawLetters()
-{
-	auto mapOfPixelLetters = makeMapOfPixelLetters(); 
-
-	int i = 0; 
-	for (auto& pair : mapOfPixelLetters)
-	{
-		auto rotatedLetter = rotateMatrixClockwise(pair.second, 16, 16);
-
-		for (int row = 0; row < 16; ++row)
-		{
-			for (int col = 0; col < 16; ++col)
-			{
-				if (rotatedLetter[row][col] != ' ')
-				{
-					setPixelToColor_withThickness(205 + 85 * i + row, 10 + col, ColorEnum::Black, 1);
-				}
-			}
-		}
-
-		i++; //using this to "move along the files" 
-	}
-}
-
-/*NOTE: this method is assuming magic number 16 for the number of rows and columns in letter bitmap*/
-void ChessImageBMP::drawNumbers()
-{
-	auto mapOfPixelNumbers = makeMapOfPixelNumbers(); 
-
-	int i = 0; 
-	for (auto& pair : mapOfPixelNumbers)
-	{
-		auto rotatedNumber = rotateIntMatrixClockwise(pair.second, 16, 16);
-		for (int row = 0; row < 16; ++row)
-		{
-			for (int col = 0; col < 16; ++col)
-			{
-				if (rotatedNumber[row][col] == pair.first) //different approach here (being goofy for fun) 
-				{
-					setPixelToColor_withThickness(20 + row, 35 + 85 * i + col, ColorEnum::Black, 1);
-				}
-			}
-		}
-		i++;
-	}
-
-
-}
-
-void ChessImageBMP::drawAndFillAnIrregularShape()
-{
-	//outline of irregular shape: 
-
-
-	//scanline fill algo: 
-
-}
-
-void ChessImageBMP::drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y)
-{
-	swap(x, y); 
-
-	for (unsigned int row = 0; row < piecePixelMatrix.size(); ++row)
-	{
-		vector<Color> currentRow = piecePixelMatrix.at(row); 
-		for (unsigned int col = 0; col < currentRow.size(); ++col)
-		{
-			auto difference = abs((int)(currentRow.at(col).bgra - (unsigned int)ColorEnum::RedBgrd)); 
-
-			auto threshold = 0x00'00'00'FF; 
-
-			if ( difference > threshold) //bgrd color of piece - do not "overwrite" the board's square color 
-			//if (currentRow.at(col).bgra < (unsigned int)ColorEnum::WKnightBgrdColor) //bgrd color of piece - do not "overwrite" the board's square color 
-			{
-				pixelData.pixelMatrix.at(row + x).at(col + y) = currentRow.at(col);
-			}
-
-			//else leave it be
-		}
-	}
-}
-
-
-void ChessImageBMP::generatePositionsToImageCoordinatesMap()
-{
-	//first make positions (positions likely to be a member variable of the ChessGame class,
-	// but only needed "once" in this ChessImageBMP class, I suppose 
-
-	const string ranks = "ABCDEFGH"; 
-	const string files = "12345678"; 
-
-	/*a 2D vector*/
-	vector<vector<string>> positions(ranks.size(),vector<string>{files.size()});
-
-	//cout << positions.size() << "\t" << positions.at(0).size() << "\n";
-
-
-	for (int i = 0; i < ranks.size(); ++i)
-	{
-		for (int j = 0; j < files.size(); ++j)
-		{
-			positions[i][j] = string(1, ranks[i]) + files[j];
-			//positions.at(i).at(j) = to_string(ranks.at(i)) + to_string(files.at(j) ); 
-			// //nope -to_string does not handle chars
-			
-			//cout << left << setw(3) << positions.at(i).at(j); 
-
-			positionsToImageCoordinates.insert
-			(
-				{ 
-					positions[i][j], 
-					std::pair<int, int>
-						{SQUARE_WIDTH/2 + SQUARE_WIDTH * i, 
-						SQUARE_WIDTH/2 + SQUARE_WIDTH * j} 
-				}
-			);
-		}
-		//cout << "\n";
-	}
-	
-
-}
 
 
 
@@ -895,6 +669,30 @@ vector<vector<int>> rotateIntMatrixClockwise(vector<vector<int>>& originalMatrix
 
 
 	return rotatedMatrix;
+}
+vector<ImageBMP> getAllImagesInFolder(string folderName)
+{
+	vector<ImageBMP> allImagesInFolder; 
+
+	auto startPath = std::filesystem::current_path(); 
+	//set current directory to folder name to get images from: 
+	auto newPath = startPath.string() + folderName;
+	std::filesystem::current_path(newPath);
+
+	for (auto& entry : std::filesystem::directory_iterator(newPath))
+	{
+		//cout << entry.path() << "\n";
+		//ImageBMP currentPieceImage{}
+		ImageBMP currentPieceImage{ entry.path().string() };
+
+		allImagesInFolder.push_back(currentPieceImage); 
+	}
+
+
+	//reset path to where main cpp file is
+	std::filesystem::current_path(startPath); 
+
+	return allImagesInFolder;
 }
 map<char, vector<vector<char>>> makeMapOfPixelLetters()
 {

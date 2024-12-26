@@ -1,15 +1,15 @@
 #pragma once
 
-#include<iostream> 
-#include<vector>
+#include"sharedFunctions.h"
+
 #include<fstream> 
 #include <vector>
-#include<string> 
 #include<cassert>
 #include<array>
 #include<algorithm>
 #include<map> 
 #include<iomanip> 
+#include<filesystem> 
 
 using std::cout, std::ifstream, std::ofstream, std::vector, std::string, std::ios, std::ostream, std::array; 
 using std::swap, std::map, std::pair, std::setw, std::left, std::to_string; 
@@ -141,6 +141,7 @@ public:
 
 	ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Color& fillColor);
 
+	ImageBMP(const string& filepath); 
 
 	void readImageBMP(string inputFilename);
 
@@ -154,42 +155,16 @@ public:
 
 	void setPixelToColor_withThickness(unsigned int x, unsigned int y, const Color& color, unsigned int thickness);
 
+	void drawAndFillAnIrregularShape();
 
 	void writeImageFile(string filename);
 
+
+
+
 };
 
 
-/*Is a CHILD of ImageBMP - has additional methods for drawing a chessboard and its pieces*/
-class ChessImageBMP : public ImageBMP
-{
-	static const unsigned int boardDimension = 720; 
-	//be wary - not using static const here will pass value of 0 to parent (ImageBMP) constructor
-
-	const int BORDER_SIZE = boardDimension / 30; //512 / 30 ~=  15
-	const int SQUARE_WIDTH = boardDimension / 9; //closer to 8...
-
-public: 
-	/*Ex: A1 is at 0,0; G8 is at 720, 720*/
-	map<string, pair<int, int> > positionsToImageCoordinates{};
-
-	ChessImageBMP(); 
-	void drawEmptyChessBoard(); 
-
-	void drawA(unsigned int x, unsigned int y, const Color& color);
-	void drawB(unsigned int x, unsigned int y, const Color& color);
-	/*for labeling files on chessboard*/
-	void drawLetters(); 
-
-	/*for labeling ranks on chessboard*/
-	void drawNumbers();
-
-	void drawAndFillAnIrregularShape(); 
-
-	void drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y);
-
-	void generatePositionsToImageCoordinatesMap();
-};
 
 
 
@@ -200,6 +175,9 @@ vector<vector<char>> rotateMatrixClockwise
 (vector<vector<char>>& originalMatrix, int originalNumberOfRows, int originalNumberOfCols);
 
 vector<vector<int>> rotateIntMatrixClockwise(vector<vector<int>>& originalMatrix, int originalNumberOfRows, int originalNumberOfCols);
+
+/*Caution: potentially returning "large" amount of data*/
+vector<ImageBMP> getAllImagesInFolder(string folderName);
 
 
 //for pixelated letters (for labeling chessboard A1, C3, etc.)
