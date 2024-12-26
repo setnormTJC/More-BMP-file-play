@@ -74,12 +74,12 @@ enum class ColorEnum : unsigned int
 	Black				=	0xFF'00'00'00,
 	White				=	0xFF'FF'FF'FF,
 
-	Red					=	0xFF'00'00'FF,
+	Red					=	0xFF'FF'00'00,
 	Green				=	0xFF'00'FF'00,
-	Blue				=	0xFF'FF'00'00,
+	Blue				=	0xFF'00'00'FF,
 
-	Yellow				=	0xFF'00'FF'FF,
-	Cyan				=	0xFF'FF'FF'00,
+	Yellow				=	0xFF'FF'FF'00,
+	Cyan				=	0xFF'00'FF'FF,
 	Magenta				=	0xFF'FF'00'FF,
 
 	//chessboard-specific colors: 
@@ -131,19 +131,20 @@ public:
 	InfoHeader infoHeader; 
 	PixelData pixelData; 
 
-	/*likely to be complicated*/
-	void writeImageFile(string filename);
 
-	/*Using the default constructor anticipates using an INPUT file to get the data of the image*/
+
+
+
 	ImageBMP() = default;
 
-	/*Determine filesize here (and set fileHeader.filesize)? */
 	ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Color& fillColor, const Color& middleDotColor);
 
 	ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Color& fillColor);
 
 
 	void readImageBMP(string inputFilename);
+
+	void doublescaleImageBMP(); 
 
 	void drawRectangleOutline(unsigned int x0, unsigned int y0, 
 		unsigned int rectangleWidth, unsigned int rectangleHeight, const Color& color);
@@ -154,6 +155,7 @@ public:
 	void setPixelToColor_withThickness(unsigned int x, unsigned int y, const Color& color, unsigned int thickness);
 
 
+	void writeImageFile(string filename);
 
 };
 

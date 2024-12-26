@@ -81,10 +81,10 @@ ImageBMP::ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Colo
 
 
 	//fill pixelData with given fill color:
-	for (int row = 0; row < imageHeight; ++row)
+	for (unsigned int row = 0; row < imageHeight; ++row)
 	{
 		vector<Color> currentRow; 
-		for (int col = 0; col < imageWidth; ++col)
+		for (unsigned int col = 0; col < imageWidth; ++col)
 		{
 			currentRow.push_back(fillColor); 
 		}
@@ -107,10 +107,10 @@ ImageBMP::ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Colo
 
 
 	//fill pixelData with given fill color:
-	for (int row = 0; row < imageHeight; ++row)
+	for (unsigned int row = 0; row < imageHeight; ++row)
 	{
 		vector<Color> currentRow;
-		for (int col = 0; col < imageWidth; ++col)
+		for (unsigned int col = 0; col < imageWidth; ++col)
 		{
 			currentRow.push_back(fillColor);
 		}
@@ -143,6 +143,63 @@ void ImageBMP::readImageBMP(string inputFilename)
 	//0x03'A9'B6
 
 	fin.close(); 
+}
+
+//only allow integer scaling (no 1.5x) 
+void ImageBMP::doublescaleImageBMP()
+{
+	unsigned int scalingFactor = 2; 
+
+	//first, make the needed updates to the headers: 
+	fileHeader.fileSize = fileHeader.fileSize + scalingFactor*scalingFactor * infoHeader.sizeOfPixelData;
+
+	infoHeader.imageWidth = infoHeader.imageWidth * scalingFactor;
+	infoHeader.imageHeight = infoHeader.imageHeight * scalingFactor;
+
+	infoHeader.sizeOfPixelData = scalingFactor*scalingFactor * infoHeader.sizeOfPixelData;
+	//ex: if 3 rows and 3 cols (9) pixels originally, then 36 pixels for scalingFactor = 2
+	//since now 6 rows and 6 cols 
+	
+	//now, modify pixel data (the more complicated/interesting part of this function): 
+
+	vector<vector<Color>> newPixelMatrix(infoHeader.imageHeight, vector < Color>(infoHeader.imageWidth)); 
+	//int a;
+
+	for (int row = 0; row < pixelData.pixelMatrix.size(); ++row)
+	{
+		for (int col = 0; col < pixelData.pixelMatrix.at(0).size(); ++col)
+		{
+			vector<pair<int, int>> newIndices =
+			{
+				pair<int, int> {2 * row,			2 * col }, //newIndexCenter
+				pair<int, int> {2 * row + 1,		2 * col}, //newIndexAbove
+				pair<int, int> {2 * row + 1,		2 * col + 1}, //newIndexAboveAndRight
+				pair<int, int> {2 * row,			2 * col + 1}//newIndexToRight
+			};
+
+			for (auto& newIndex : newIndices)
+			{
+				newPixelMatrix.at(newIndex.first).at(newIndex.second) = pixelData.pixelMatrix.at(row).at(col); 
+			}
+			//newPixelMatrix.at(newIndexCenter.first).at(newIndexCenter.second) = 
+			//	pixelData.pixelMatrix.at(row).at(col); 
+
+			//newPixelMatrix.at(newIndexAbove.first).at(newIndexAbove.second) =
+			//	pixelData.pixelMatrix.at(row).at(col);
+
+			//newPixelMatrix.at(newIndexAboveAndRight.first).at(newIndexAboveAndRight.second) =
+			//	pixelData.pixelMatrix.at(row).at(col);
+
+			//newPixelMatrix.at(newIndexCenter.first).at(newIndexCenter.second) =
+			//	pixelData.pixelMatrix.at(row).at(col);
+
+		}
+	}
+	//resize and copy new into old (the member variable that will live beyond this function scope): 
+	pixelData.pixelMatrix.resize(infoHeader.imageHeight, vector<Color>(infoHeader.imageWidth));
+
+	pixelData.pixelMatrix = newPixelMatrix; 
+
 }
 
 
@@ -307,9 +364,9 @@ void ImageBMP::readPixelDataFromFile(ifstream& fin)
 		pixelData.pixelMatrix.resize(infoHeader.imageHeight,
 			vector<Color>(infoHeader.imageWidth));	//CAREFUL to resize as a TWO-d array - NOT 1D!
 
-		for (int row = 0; row < infoHeader.imageHeight; ++row)
+		for (unsigned int row = 0; row < infoHeader.imageHeight; ++row)
 		{
-			for (int col = 0; col < infoHeader.imageWidth; ++col)
+			for (unsigned int col = 0; col < infoHeader.imageWidth; ++col)
 			{
 				char bgra[4];
 				fin.read(bgra, 4);
@@ -363,9 +420,9 @@ void ImageBMP::readPixelDataFromFile(ifstream& fin)
 		pixelData.pixelMatrix.resize(infoHeader.imageHeight,
 			vector<Color>(infoHeader.imageWidth));	//CAREFUL to resize as a TWO-d array - NOT 1D!
 
-		for (int row = 0; row < infoHeader.imageHeight; ++row)
+		for (unsigned int row = 0; row < infoHeader.imageHeight; ++row)
 		{
-			for (int col = 0; col < infoHeader.imageWidth; ++col)
+			for (unsigned int col = 0; col < infoHeader.imageWidth; ++col)
 			{
 				char bgr[3];
 				fin.read(bgr, 3);
@@ -425,25 +482,25 @@ void ImageBMP::drawRectangleOutline(unsigned int x0, unsigned int y0,
 	assert(y0 + rectangleHeight <= infoHeader.imageHeight);
 
 	//left line 
-	for (int i = x0; i < x0 + rectangleWidth; ++i)
+	for (unsigned int i = x0; i < x0 + rectangleWidth; ++i)
 	{
 		pixelData.pixelMatrix.at(i).at(y0) = Color{ 0xFF'00'00'00 }; //Black
 	}
 	
 	//right
-	for (int i = x0; i < x0 + rectangleWidth; ++i)
+	for (unsigned int i = x0; i < x0 + rectangleWidth; ++i)
 	{
 		pixelData.pixelMatrix.at(i).at(y0 + rectangleWidth) = Color{ 0x00'FF'00'00 }; //red
 	}
 
 	//bottom
-	for (int i = y0; i < y0 + rectangleHeight; ++i)
+	for (unsigned int i = y0; i < y0 + rectangleHeight; ++i)
 	{
 		pixelData.pixelMatrix.at(x0).at(i) = Color{ 0x00'00'00'FF };//Blue;
 	}
 
 	//top
-	for (int i = y0; i < y0 + rectangleHeight; ++i)
+	for (unsigned int i = y0; i < y0 + rectangleHeight; ++i)
 	{
 		pixelData.pixelMatrix.at(x0 + rectangleHeight).at(i) = Color{ 0x00'00'FF'00 };//green
 	}
@@ -454,9 +511,9 @@ void ImageBMP::fillRectangleWithColor(unsigned int x0, unsigned int y0, unsigned
 {
 	swap(x0, y0); //stupid, but ah well -> images use image[row][col], where row is y value and col is x value
 
-	for (int row = x0; row < x0 + rectangleWidth; ++row)
+	for (unsigned int row = x0; row < x0 + rectangleWidth; ++row)
 	{
-		for (int col = y0; col < y0 + rectangleHeight; ++col)
+		for (unsigned int col = y0; col < y0 + rectangleHeight; ++col)
 		{
 			pixelData.pixelMatrix.at(row).at(col) = color; 
 		}
@@ -479,25 +536,30 @@ void ImageBMP::setPixelToColor_withThickness(unsigned int x, unsigned int y, con
 	//center pixel 
 	pixelData.pixelMatrix[x][y] = color; 
 	
-	//neighbors within thickness:
-	for (int row = -1*(int)thickness; row <= (int)thickness; ++row)
+
+	if (thickness > 1)
 	{
-		for (int col = -1 *(int) thickness; col < (int) thickness; ++col)
+		//neighbors within thickness:
+		for (unsigned int row = -1 * (int)thickness; row <= (int)thickness; ++row)
 		{
-			int newX = x + col; 
-			int newY = y + row; 
-
-			// Ensure the new coordinates are within bounds
-			if (newX >= 0 
-				&& newX < static_cast<int>(infoHeader.imageWidth) 
-				&& newY >= 0 
-				&& newY < static_cast<int>(infoHeader.imageHeight))
+			for (unsigned int col = -1 * (int)thickness; col < (int)thickness; ++col)
 			{
-				pixelData.pixelMatrix[newX][newY] = color;
-			}
+				int newX = x + col;
+				int newY = y + row;
 
+				// Ensure the new coordinates are within bounds
+				if (newX >= 0
+					&& newX < static_cast<int>(infoHeader.imageWidth)
+					&& newY >= 0
+					&& newY < static_cast<int>(infoHeader.imageHeight))
+				{
+					pixelData.pixelMatrix[newX][newY] = color;
+				}
+
+			}
 		}
 	}
+
 }
 
 

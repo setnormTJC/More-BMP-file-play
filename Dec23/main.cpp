@@ -2,32 +2,10 @@
 //
 
 #include"ImageBMP.h"
+#include "someImageBMPTestingFunctions.h"
 #include<thread> 
 
 
-auto demoSomeBMPImagePlay()
-{
-	ImageBMP outputImageBMP{ 200, 300, Color{0x00'22'33'44}, Color{0x55'66'77'88} };
-	outputImageBMP.drawRectangleOutline(25, 50, 75, 100, Color{ 0xFF'FF'FF'00 });
-	outputImageBMP.writeImageFile("out.bmp");
-
-	ImageBMP inputImageBMP{};
-	inputImageBMP.readImageBMP("out.bmp");
-
-	inputImageBMP.writeImageFile("outCopy.bmp");
-}
-
-auto getWhiteKnightImage()
-{
-	ImageBMP whiteKnightBMP{};
-	//whiteKnightBMP.readImageBMP("whiteKnight.bmp"); 
-	whiteKnightBMP.readImageBMP("whiteKnightCopy.bmp");
-
-
-	auto whiteKnightPixelData = whiteKnightBMP.pixelData.pixelMatrix;
-
-	return whiteKnightPixelData;
-}
 
 
 auto getEmptyChessBoardImage()
@@ -56,15 +34,9 @@ int main()
 {
 
 
-
-
-	//std::cin.get(); 
-
 	auto chessImageBMP = getEmptyChessBoardImage(); 
 	
 	chessImageBMP.generatePositionsToImageCoordinatesMap(); 
-
-
 
 
 	auto A8Pos = chessImageBMP.positionsToImageCoordinates.find("A8");
@@ -77,43 +49,28 @@ int main()
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-	std::cin.get(); 
 	
-	auto whiteKnightPixelData = getWhiteKnightImage(); 
+	auto whiteKnightImage = getWhiteKnightImage(); 
+	auto whiteKnightPixelData = whiteKnightImage.pixelData.pixelMatrix; 
 
-	chessImageBMP.drawPieceOnBoard(whiteKnightPixelData, 50, 50);
+
+	auto whiteKnightQSideStartingPos = chessImageBMP.positionsToImageCoordinates.find("B1");
+	if (whiteKnightQSideStartingPos != chessImageBMP.positionsToImageCoordinates.end())
+	{
+		//chessImageBMP.drawPieceOnBoard(whiteKnightPixelData, 50, 50);
+		int x = whiteKnightQSideStartingPos->second.first; 
+		int y = whiteKnightQSideStartingPos->second.second; 
+
+		chessImageBMP.drawPieceOnBoard(whiteKnightPixelData, x, y);
+
+	}
 
 
 	const char* filename = "chessboard.bmp";
 	chessImageBMP.writeImageFile(filename); 
 
 
-	chessImageBMP.drawPieceOnBoard(whiteKnightPixelData, 150, 150);
-	const char* filename2 = "chessboard2.bmp";
-	chessImageBMP.writeImageFile(filename2);
-
 	system(filename); 
 
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-
-
-	system(filename2);
-
-
-
-	// Close the file using taskkill
-	//system("taskkill /IM Microsoft.Photos.exe /F");
 }
 

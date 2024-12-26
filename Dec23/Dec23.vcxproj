@@ -138,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="ChessGame.h" />
     <ClInclude Include="ImageBMP.h" />
+    <ClInclude Include="someImageBMPTestingFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
