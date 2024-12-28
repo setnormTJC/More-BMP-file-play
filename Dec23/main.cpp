@@ -4,47 +4,74 @@
 
 #include"ChessGame.h"
 
-#include<thread> 
 
+void soundAlertIfImagesTakingUpTooMuchSpace()
+{
+	auto currentPath = std::filesystem::current_path(); 
+
+	size_t sumOfFileSizes = 0; 
+
+	for (auto& entry : std::filesystem::directory_iterator(currentPath))
+	{
+		sumOfFileSizes += entry.file_size(); 
+	}
+
+	if (sumOfFileSizes > 100'000'000) //100 MB (about 50 images with 720 x 720 p with 32 bit depth)
+	{
+		cout << "file size over 9000!!!! (actually 100 MB)\n";
+		while (true)
+		{
+			cout << "\a";
+		}
+	}
+
+	cout << "\n\nSum of file sizes: " << sumOfFileSizes << "\n";
+}
 
 int main()
 {
-	//int a = 2;
-
-	//if (a == 2)
-	//{
-	//	__debugbreak();  //may be preferable to cin.get() for my tastes 
-	//}
-
-	//int b = 23; 
-
-	//ChessImageBMP chessboardImage{}; 
-	//
-	//const char* filename = "323.bmp"; //current time
-	//chessboardImage.writeImageFile(filename); 
-	//system(filename); 
-
 	ChessGame theGame{}; 
 
-	theGame.arbitrarilyMovePiece("blackKing", "E5");
 
-	const char* filename = "335.bmp"; 
-	theGame.writeImageFile(filename); 
+	//move E2 pawn to check if white king can possibly move there
 
-	system(filename); 
+	theGame.arbitrarilyMovePiece("whitePawnE2", "E3");
+
+
+	for (int i = 0; i < 5; ++i) //5 moves for no particular reason
+	{
+		theGame.generatePiecesToPossiblePositions();
+
+
+		auto piecesToPossiblePositions = theGame.piecesToPossiblePositions;
+
+		for (auto& pair : piecesToPossiblePositions)
+		{
+
+			if (pair.second.size() != 0)
+			{
+				cout << pair.first << " can move to:\n";
+				for (int i = 0; i < pair.second.size(); ++i)
+				{
+					cout << pair.second.at(i) << "\n";
+				}
+			}
+
+		}
+
+		string piece, position; 
+		cout << "Enter piece and position to move to: \n";
+		std::cin >> piece >> position; 
+
+
+		theGame.arbitrarilyMovePiece(piece, position); 
+
+
+		soundAlertIfImagesTakingUpTooMuchSpace();
+	}
+
 
 	return 0; 
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

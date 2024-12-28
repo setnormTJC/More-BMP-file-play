@@ -8,13 +8,19 @@
 
 #include<map> 
 
+#include<time.h> //for writing image file name as current system time (Windows-specific, I think)
 
 using std::vector, std::string, std::cout, std::map; 
 
 vector<string> getPieceNames(const string& pieceColor);
 vector<vector<string>> getChessPositions();
+std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessPosition);
 
-map<string, string> getPieceNamesToInitialPositions(const vector<string>& pieceNames);
+map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
+
+bool isPositionInBounds(int rank, char file);
+
+
 
 template<typename T1, typename T2> 
 map<T2, T1> switchMapKeysAndValues(map<T1, T2>& originalMap)
@@ -29,5 +35,7 @@ map<T2, T1> switchMapKeysAndValues(map<T1, T2>& originalMap)
 	return switchedMap; 
 }
 
-
 vector<string> flatten2DArray(vector<vector<string>>& twoDArray);
+
+/*ex: if current hour and minute is 3:47 pm, this method returns 15_47 (zulu time)*/
+string getCurrentHourAndMinute(); 

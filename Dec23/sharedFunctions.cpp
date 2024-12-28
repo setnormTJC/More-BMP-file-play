@@ -23,9 +23,9 @@ vector<string> getPieceNames(const string& pieceColor)
 	else
 	{
 		cout << "Neither black nor white piece color?\n";
-		std::cin.get(); 
-		exit(-1); 
-
+		//std::cin.get(); 
+		//exit(-1); 
+		__debugbreak();
 		//return pieceNames; 
 	}
 
@@ -77,8 +77,18 @@ vector<vector<string>> getChessPositions()
 	return positions; 
 }
 
-/*Add black pieces later*/
-map<string,string> getPieceNamesToInitialPositions(const vector<string>& pieceNames)
+std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessPosition)
+{
+	std::pair<char, int> positionAsCharAndInt; 
+
+	positionAsCharAndInt.first = chessPosition.at(0); 
+	positionAsCharAndInt.second = chessPosition.at(1) - 48; //ASCII char '0' has value of 48
+
+	return positionAsCharAndInt; 
+}
+
+
+map<string,string> getPiecesToInitialPositions(const vector<string>& pieceNames)
 {
 	auto chessPositions = getChessPositions(); 
 
@@ -133,6 +143,15 @@ map<string,string> getPieceNamesToInitialPositions(const vector<string>& pieceNa
 	return pieceNamesToInitialPositions; 
 }
 
+bool isPositionInBounds(int rank, char file)
+{
+	return
+		(file >= 'A' && file <= 'H')
+		&&
+		(rank >= 1 && rank <= 8);
+
+}
+
 vector<string> flatten2DArray(vector<vector<string>>& twoDArray)
 {
 	vector<string> oneDArray;// { twoDArray.size()* twoDArray.at(0).size() };
@@ -148,5 +167,24 @@ vector<string> flatten2DArray(vector<vector<string>>& twoDArray)
 
 	return oneDArray; 
 }
+
+
+string getCurrentHourAndMinute()
+{
+	time_t currentTime = time(nullptr);
+	//passing nullptr their will get current number of seconds (as long long) since Jan 1, 1970 at midnight UTC
+
+	tm timeStruct; //tm is the (very clear) name of a stuct in <time.h>  
+	localtime_s(&timeStruct, &currentTime);
+
+	std::pair<int, int> currentHourAndMinute = { timeStruct.tm_hour, timeStruct.tm_min };
+
+	//underscore and not : in anticipation of use in a filename (colons not allowed)
+	return std::to_string(currentHourAndMinute.first) + "_" + std::to_string(currentHourAndMinute.second);
+}
+
+
+
+
 
 

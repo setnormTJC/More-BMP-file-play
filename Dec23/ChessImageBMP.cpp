@@ -9,10 +9,10 @@ ChessImageBMP::ChessImageBMP()
 	generatePositionsToImageCoordinatesMap();
 
 
-	pieceNames = mapPieceNamesToImages(); 
+	pieceNames = mapPiecesToImages(); 
 
 	//get INITIAL positions of all pieces 
-	pieceNamesToPositions = getPieceNamesToInitialPositions(pieceNames);
+	piecesToPositions = getPiecesToInitialPositions(pieceNames);
 
 	//switch keys and values in the pieceToPosition map (may not be needed)
 	//initialPositionsToPieceNames = switchMapKeysAndValues(pieceNamesToPositions);
@@ -190,7 +190,7 @@ void ChessImageBMP::drawNumbers()
 }
 
 
-vector<string> ChessImageBMP::mapPieceNamesToImages()
+vector<string> ChessImageBMP::mapPiecesToImages()
 {
 	//first get white piece names: 
 	string pieceColor = "white";
@@ -203,7 +203,7 @@ vector<string> ChessImageBMP::mapPieceNamesToImages()
 	//now insert white piece names and images into map: 
 	for (int i = 0; i < whitePieceNames.size(); ++i)
 	{
-		pieceNamesToImages.insert({whitePieceNames.at(i), whitePieceImages.at(i) });
+		piecesToImages.insert({whitePieceNames.at(i), whitePieceImages.at(i) });
 	}
 
 	//now the same for black piece images:
@@ -213,7 +213,7 @@ vector<string> ChessImageBMP::mapPieceNamesToImages()
 	auto blackPieceImages = getAllImagesInFolder(relativeBlackFolderName);
 	for (int i = 0; i < blackPieceNames.size(); ++i)
 	{
-		pieceNamesToImages.insert({ blackPieceNames.at(i), blackPieceImages.at(i) });
+		piecesToImages.insert({ blackPieceNames.at(i), blackPieceImages.at(i) });
 	}
 
 
@@ -289,8 +289,8 @@ void ChessImageBMP::drawPieces()
 		int currentY; 
 
 		//find corrsponding image in map: 
-		auto imageIterator = pieceNamesToImages.find(currentPieceName);
-		if (imageIterator != pieceNamesToImages.end())
+		auto imageIterator = piecesToImages.find(currentPieceName);
+		if (imageIterator != piecesToImages.end())
 		{
 			currentPieceImage = imageIterator->second; 
 		}
@@ -302,8 +302,8 @@ void ChessImageBMP::drawPieces()
 		}
 
 		//find chess position of pieceName in map: 
-		auto positionIterator = pieceNamesToPositions.find(currentPieceName); 
-		if (positionIterator != pieceNamesToPositions.end())
+		auto positionIterator = piecesToPositions.find(currentPieceName); 
+		if (positionIterator != piecesToPositions.end())
 		{
 			currentPosition = positionIterator->second; 
 		}
@@ -330,7 +330,7 @@ void ChessImageBMP::drawPieces()
 
 
 	return; 
-	for (auto& thePair : pieceNamesToPositions)
+	for (auto& thePair : piecesToPositions)
 	{
 		string pieceName = thePair.first; 
 
@@ -362,6 +362,24 @@ void ChessImageBMP::drawPieces()
 		}
 	}
 
+}
+
+void ChessImageBMP::fillPositionWithColor(const string& position)
+{
+	auto positionAsCharAndInt = convertStringChessPositionToCharAndInt(position); 
+	int col = positionAsCharAndInt.first - 65 ; //char 'A' has ASCII value 65
+	int row = positionAsCharAndInt.second - 1; //0-based counting 
+
+	ColorEnum squareColor = ((col + row) % 2 == 0) ? ColorEnum::LightSquareColor : ColorEnum::DarkSquareColor;
+
+	fillRectangleWithColor
+	(
+		BORDER_SIZE + SQUARE_WIDTH * col + 10, //NOTE: the 10 here "works" for boardDimension = 720 
+		BORDER_SIZE + SQUARE_WIDTH * row + 10,
+		SQUARE_WIDTH,
+		SQUARE_WIDTH,
+		squareColor
+	);
 }
 
 
