@@ -25,6 +25,7 @@ void soundAlertIfImagesTakingUpTooMuchSpace()
 		}
 	}
 
+	cout.imbue(std::locale{""});
 	cout << "\n\nSum of file sizes: " << sumOfFileSizes << "\n";
 }
 
@@ -32,41 +33,24 @@ int main()
 {
 	ChessGame theGame{}; 
 
+	char oldPositionFile, newPositionFile;
+	int oldPositionRank, newPositionRank;
 
-	//move E2 pawn to check if white king can possibly move there
-
-	theGame.arbitrarilyMovePiece("whitePawnE2", "E3");
-
-
-	for (int i = 0; i < 5; ++i) //5 moves for no particular reason
+	while (!theGame.isGameOver())
 	{
-		theGame.generatePiecesToPossiblePositions();
 
+		cout << "Enter the FILE and RANK of the piece you want to move (ex: A8, H5, etc.)\n";
+		std::cin >> oldPositionFile >> oldPositionRank;
 
-		auto piecesToPossiblePositions = theGame.piecesToPossiblePositions;
+		cout << "Where do you want to move to ?\n";
+		std::cin >> newPositionFile >> newPositionRank; 
+		
+		theGame.movePiece(oldPositionFile, oldPositionRank , newPositionFile, newPositionRank);
 
-		for (auto& pair : piecesToPossiblePositions)
+		if (std::cin.fail()) //ex: SOMEONE enters chess piece name as first input mistakenly ...
 		{
-
-			if (pair.second.size() != 0)
-			{
-				cout << pair.first << " can move to:\n";
-				for (int i = 0; i < pair.second.size(); ++i)
-				{
-					cout << pair.second.at(i) << "\n";
-				}
-			}
-
+			std::cin.clear(); 
 		}
-
-		string piece, position; 
-		cout << "Enter piece and position to move to: \n";
-		std::cin >> piece >> position; 
-
-
-		theGame.arbitrarilyMovePiece(piece, position); 
-
-
 		soundAlertIfImagesTakingUpTooMuchSpace();
 	}
 

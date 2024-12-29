@@ -87,6 +87,15 @@ std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessP
 	return positionAsCharAndInt; 
 }
 
+string convertCharAndIntChessPositionToString(const char file, const int rank)
+{
+	string positionAsString; 
+
+	positionAsString = file + std::to_string(rank);
+
+	return positionAsString; 
+}
+
 
 map<string,string> getPiecesToInitialPositions(const vector<string>& pieceNames)
 {
@@ -143,7 +152,7 @@ map<string,string> getPiecesToInitialPositions(const vector<string>& pieceNames)
 	return pieceNamesToInitialPositions; 
 }
 
-bool isPositionInBounds(int rank, char file)
+bool isPositionInBounds(char file, int rank)
 {
 	return
 		(file >= 'A' && file <= 'H')

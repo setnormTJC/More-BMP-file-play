@@ -13,6 +13,12 @@ class ChessImageBMP : public ImageBMP
 	const int SQUARE_WIDTH = boardDimension / 9; //closer to 8...
 
 
+	/*Ex: A1 is at 0,0; G8 is at 720, 720*/
+	map<string, pair<int, int> > positionsToImageCoordinates{};
+
+	/*This will be occupying significant space in memory*/
+	map<string, ImageBMP> piecesToImages;
+
 
 	/*Anticipate this function only being called by `drawPieces`*/
 	void drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y);
@@ -33,7 +39,7 @@ public:
 
 	void generatePositionsToImageCoordinatesMap();
 
-	/*Uses maps of pieceNames to images and pieceNames to coordinates*/
+	/*Uses maps of pieceNames to images and pieceNames to coordinates - NOTE that neither of the maps is ALTERED by this method*/
 	void drawPieces(); 
 
 	void fillPositionWithColor(const string& position); 
@@ -48,11 +54,7 @@ public:
 	map <string, string> piecesToPositions;
 	//map <string, string> initialPositionsToPieceNames; 
 
-	/*Ex: A1 is at 0,0; G8 is at 720, 720*/
-	map<string, pair<int, int> > positionsToImageCoordinates{};
 
-	/*This will be occupying significant space in memory*/
-	map<string, ImageBMP> piecesToImages;
 
 
 };

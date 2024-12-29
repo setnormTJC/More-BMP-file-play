@@ -281,7 +281,7 @@ void ChessImageBMP::generatePositionsToImageCoordinatesMap()
 void ChessImageBMP::drawPieces()
 {
 
-	for (const auto& currentPieceName : pieceNames)
+	for (const auto& currentPieceName : pieceNames) //for all pieces NOT YET TAKEN (reduce waste)
 	{
 		ImageBMP currentPieceImage;
 		string currentPosition;
@@ -325,41 +325,6 @@ void ChessImageBMP::drawPieces()
 		//draw: 
 		drawPieceOnBoard(currentPieceImage.pixelData.pixelMatrix, currentX, currentY);
 
-	}
-
-
-
-	return; 
-	for (auto& thePair : piecesToPositions)
-	{
-		string pieceName = thePair.first; 
-
-		auto it = positionsToImageCoordinates.find(thePair.second);
-		if ( it != positionsToImageCoordinates.end())
-		{
-
-			pair<int, int> imageCoordinate = it->second; 
-
-			int x = imageCoordinate.first; 
-			int y = imageCoordinate.second; 
-
-			//cout << pair.first << " is at chess position: " << pair.second
-			//	<< "  with coordinate X = " << x << " and y = " << y << "\n\n";
-
-			ImageBMP chessPieceBMP{};
-			
-			//string pieceFileName = "resources/pieceImages/whites/"  + pieceName + ".bmp";
-
-			//chessPieceBMP.readImageBMP(pieceFileName);
-			
-			drawPieceOnBoard(chessPieceBMP.pixelData.pixelMatrix, x, y); 
-		}
-
-		else
-		{
-			cout << thePair.second << " not found in `putWhitePiecesInInitialPositions`?";
-			std::cin.get(); 
-		}
 	}
 
 }

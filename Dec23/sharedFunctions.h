@@ -14,11 +14,18 @@ using std::vector, std::string, std::cout, std::map;
 
 vector<string> getPieceNames(const string& pieceColor);
 vector<vector<string>> getChessPositions();
+
+
+
 std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessPosition);
+string convertCharAndIntChessPositionToString(const char file, const int rank);
+
+
+
 
 map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
 
-bool isPositionInBounds(int rank, char file);
+bool isPositionInBounds(char file, int rank);
 
 
 
