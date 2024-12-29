@@ -27,13 +27,10 @@ class FileHeader
 	unsigned int indexOfPixelData = 0x00'00'00'36; //indices 10 - 13
 
 public:
-	unsigned int fileSize; //indices 2 - 5 (size is in bytes)
+	unsigned int fileSize{}; //indices 2 - 5 (size is in bytes)
 	//should perhaps be set by the ImageBMP class //(since ImageBMP will have info on pixel data and infoheader) 
 
 	FileHeader() = default;
-
-	/*NOTE that the write order is CRITICAL if writing to a BMP file!*/
-	friend ostream& operator << (ostream& os, const FileHeader& fileHeader);
 
 	friend class ImageBMP; 
 
@@ -46,7 +43,7 @@ class InfoHeader
 	
 	short bitsPerPixel = 0x00'20; //CAREFUL! not always 32! -> indices 28 - 29 (32 bits - 24 for G,B,R, and 8 for Alpha)
 	unsigned int compressionMethod = 0x00'00'00'00; //indices 30 - 33
-	unsigned int sizeOfPixelData;// = imageWidth * imageHeight * (bitsPerPixel / 8); //indices 34 - 37
+	unsigned int sizeOfPixelData{};// = imageWidth * imageHeight * (bitsPerPixel / 8); //indices 34 - 37
 	vector<int> remainingHeaderFields =
 	{
 		0x00'00'00'00,//xPixelsPerMeter
@@ -105,9 +102,6 @@ struct Color
 	Color(unsigned int b, unsigned int g, unsigned int r); // New constructor for 24-bit color
 	Color(unsigned int b, unsigned int g, unsigned int r, unsigned int a);
 	Color(ColorEnum colorEnum);
-
-	//do bitshifting here
-	auto alpha();
 
 	unsigned int convertToUnsignedInt();
 };

@@ -321,6 +321,11 @@ void ChessImageBMP::drawPieces()
 			currentY = coordinateIterator->second.second; 
 		}
 
+		else
+		{
+			cout << "coordinate iterator not found\n";
+			__debugbreak();
+		}
 
 		//draw: 
 		drawPieceOnBoard(currentPieceImage.pixelData.pixelMatrix, currentX, currentY);

@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Comment CommentText="PieceRules is FRIEND of ChessGame">
+    <Position X="15.467" Y="2.125" Height="0.342" Width="2.467" />
+  </Comment>
   <Class Name="FileHeader">
     <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
@@ -10,7 +13,7 @@
   <Class Name="ImageBMP">
     <Position X="4" Y="1" Width="4.25" />
     <TypeIdentifier>
-      <HashCode>ACAAACAAAACIAAAQAAIAAABAMBAAAACAACAAAAAAAAA=</HashCode>
+      <HashCode>ACAAACAAAACKAAAQAAIAAABAMBAAAACAACAAAAAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -20,37 +23,47 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="InfoHeader">
-    <Position X="0.5" Y="3.25" Width="1.5" />
+    <Position X="0.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAEAAACAAgAAAAAgAAKAgAAAgAAAAiAAAAgAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PixelData">
-    <Position X="10" Y="3.25" Width="1.5" />
+    <Position X="1.75" Y="6.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAQAAAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ChessGame">
-    <Position X="14.75" Y="1" Width="1.5" />
+    <Position X="11.75" Y="2.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAIAAAAAAAIAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>IAAAAAAAAAAAIAAgAAAAAQCAAAgEEQAAAAgAIAABACA=</HashCode>
       <FileName>ChessGame.h</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="boardImage" />
+    </ShowAsAssociation>
   </Class>
   <Class Name="ChessImageBMP">
-    <Position X="5.25" Y="6" Width="1.5" />
+    <Position X="5.5" Y="6" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAABAAAAAAAiAAgQAAAAAAQAgAAAQAAAAoAAAACAADA=</HashCode>
+      <HashCode>AAABAAAABIAkAAkQABAAAAQAgAAAQAAAAoAAAACBADA=</HashCode>
       <FileName>ChessImageBMP.h</FileName>
     </TypeIdentifier>
   </Class>
-  <Struct Name="Color">
-    <Position X="9.5" Y="0.75" Width="1.5" />
+  <Class Name="PieceRules">
+    <Position X="15.25" Y="2.75" Width="2.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAQgAAAAAA=</HashCode>
+      <HashCode>AACAAAAAAAAAAEEAAAAAAAAAABAAAQAAQAAAAAAAAAA=</HashCode>
+      <FileName>ChessGame.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Color">
+    <Position X="1.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>ImageBMP.h</FileName>
     </TypeIdentifier>
   </Struct>

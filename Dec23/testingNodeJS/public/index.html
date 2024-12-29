@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang = "en"> 
+    <head>
+        <meta charset="UTF-8">
+        <title>Chessboard</title>
+        <style>
+            img
+            {
+                display: block;
+                margin: auto;
+            }
+            #chessboard {
+            width: 720px;
+            height: 720px;
+            background-image: url('chessboard.bmp'); /*image filename here!*/
+            background-size: cover;
+            position: relative;
+        }
+        
+        </style>
+    </head>
+
+    <body>
+        <div id="chessboard"></div>
+        <script>
+            let clickCount = 0;
+            const maxClicks = 2;
+            const coordinates = [];
+    
+            document.getElementById('chessboard').addEventListener('click', function(event) {
+                if (clickCount < maxClicks) {
+                    const rect = event.target.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    coordinates.push({ x, y });
+                    clickCount++;
+                    console.log(`Click ${clickCount}: (${x}, ${y})`);
+    
+                    if (clickCount === maxClicks) {
+                        console.log('Maximum clicks reached. Sending coordinates to server.');
+                        sendCoordinatesToServer(coordinates);
+                    }
+                } else {
+                    console.log('No more clicks allowed.');
+                }
+            });
+    
+            function sendCoordinatesToServer(coordinates) {
+                fetch('/save-coordinates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(coordinates)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+        </script>
+    </body>
+    </html>

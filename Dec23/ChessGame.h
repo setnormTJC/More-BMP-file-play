@@ -4,8 +4,31 @@
 
 #include"ChessImageBMP.h"
 
+
+
 #include<chrono>  
 #include<thread>  //for sleeping thread before displaying updated chessboard after a move is made (or similar "events")
+
+
+class PieceRules
+{
+
+
+	static vector<string> getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	static vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	static vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	static vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+
+public:
+	/*Static so that ChessGame class can call without having to instantiate an object*/
+	static vector<string> getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition);
+
+	PieceRules();
+
+
+};
+
+
 
 
 class ChessGame
@@ -16,16 +39,13 @@ private:
 
 
 	void generatePiecesToPossiblePositions();
-	/*Not considering pieces being "in the way", for now
-	@return - nothing, modifies a member variable (a map <string, vector<string>>) of the `ChessRule` class
-	@param currentPosition - a chess position such as A8, G4, etc.
-	*/
-	vector<string> getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition);
 
-	vector<string> getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	//vector<string> getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition);
+
+	//vector<string> getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	//vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	//vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	//vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 
 
 	/*
@@ -34,19 +54,21 @@ private:
 	2) a friend piece
 	3) an opponent's piece
 	*/
-	string getContentsOfPossiblePosition(const string& possiblePosition);
+	static string getContentsOfPossiblePosition(const string& possiblePosition);
 
-	string getFriendOrFoeOrNeutral(const string& contentsOfFirstPosition, const string& contentsOfSecondPosition);
+	static string getFriendOrFoeOrNeutral(const string& contentsOfFirstPosition, const string& contentsOfSecondPosition);
 	
 
 private: //just using the "indentation" here to "separate" member variables and member functions 
-	map<string, string> positionsToPieces;// = switchMapKeysAndValues(boardImage.pieceNamesToPositions);
+	
+	static map<string, string> positionsToPieces;// = switchMapKeysAndValues(boardImage.pieceNamesToPositions);
 
 	map <string, vector<string>> piecesToPossiblePositions;
 
 	size_t moveCount = 0; 
 
-	bool canTakeOpponentPiece = false; 
+	//static to allow PieceRules class access without having to instantate ChessGame object 
+	static bool canTakeOpponentPiece;// = false; 
 
 public: 
 	/************************public member functions ***********************************/
@@ -70,5 +92,10 @@ public:
 	int whiteScore = 0; 
 
 	ChessImageBMP boardImage{};
+
+	friend class PieceRules; 
+
 };
+
+
 

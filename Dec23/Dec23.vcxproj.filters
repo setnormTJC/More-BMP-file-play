@@ -30,6 +30,9 @@
     <ClCompile Include="sharedFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SomeWindowsFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageBMP.h">
@@ -41,10 +44,13 @@
     <ClInclude Include="someImageBMPTestingFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ChessImageBMP.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="sharedFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChessImageBMP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SomeWindowsFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,7 +10,17 @@
 
 #include<time.h> //for writing image file name as current system time (Windows-specific, I think)
 
-using std::vector, std::string, std::cout, std::map; 
+#include<fstream> 
+
+#include<string>
+
+
+
+
+using std::vector, std::string, std::cout, std::map, std::getline; std::ifstream;
+
+
+void killProcessOnPort(int port);
 
 vector<string> getPieceNames(const string& pieceColor);
 vector<vector<string>> getChessPositions();
