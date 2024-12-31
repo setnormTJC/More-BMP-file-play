@@ -193,44 +193,47 @@ string getCurrentHourAndMinute()
 }
 
 
-void killProcessOnPort(int port)
-{
-	// Create the command to find the process ID using the specified port
-	std::string command = "netstat -ano | findstr :" + std::to_string(port) + " > portinfo.txt";
-	std::system(command.c_str());
 
-	// Open the file containing the port information
-	std::ifstream portInfoFile("portinfo.txt");
-	std::string line;
-	std::string processID;
 
-	// Parse the file to find the process ID
-	if (portInfoFile.is_open())
-	{
-		while (std::getline(portInfoFile, line))
-		{
-			// The process ID is the last element in the line
-			size_t lastSpace = line.find_last_of(" ");
-			if (lastSpace != std::string::npos)
-			{
-				processID = line.substr(lastSpace + 1);
-				break;
-			}
-		}
-		portInfoFile.close();
-	}
-
-	// If a process ID was found, kill the process
-	if (!processID.empty())
-	{
-		std::string killCommand = "taskkill /PID " + processID + " /F";
-		std::system(killCommand.c_str());
-	}
-	else
-	{
-		std::cout << "No process found using port " << port << std::endl;
-	}
-
-	// Clean up the temporary file
-	std::remove("portinfo.txt");
-}
+//void killProcessOnPort(int port)
+//{
+//	// Create the command to find the process ID using the specified port
+//	std::string command = "netstat -ano | findstr :" + std::to_string(port) + " > portinfo.txt";
+//	//note the "cat" use! > direct contents into file 
+//	std::system(command.c_str());
+//
+//	// Open the file containing the port information
+//	std::ifstream portInfoFile("portinfo.txt");
+//	std::string line;
+//	std::string processID;
+//
+//	// Parse the file to find the process ID
+//	if (portInfoFile.is_open())
+//	{
+//		while (std::getline(portInfoFile, line))
+//		{
+//			// The process ID is the last element in the line
+//			size_t lastSpace = line.find_last_of(" ");
+//			if (lastSpace != std::string::npos)
+//			{
+//				processID = line.substr(lastSpace + 1);
+//				break;
+//			}
+//		}
+//		portInfoFile.close();
+//	}
+//
+//	// If a process ID was found, kill the process
+//	if (!processID.empty())
+//	{
+//		std::string killCommand = "taskkill /PID " + processID + " /F";
+//		std::system(killCommand.c_str());
+//	}
+//	else
+//	{
+//		std::cout << "No process found using port " << port << std::endl;
+//	}
+//
+//	// Clean up the temporary file
+//	std::remove("portinfo.txt");
+//}

@@ -2,17 +2,7 @@
 
 
 #include"ChessGame.h"
-
-
-void waitForNodeJsToFinish(const std::string& lockFilePath)
-{
-	while (std::filesystem::exists(lockFilePath)) 
-	{
-		std::cout << "Lock file exists, waiting...\n";
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-}
-
+#include "NodeJSFunctions.h"
 
 
 /*"Too much" means > 100 MB*/
@@ -40,68 +30,30 @@ void soundAlertIfImagesTakingUpTooMuchSpace()
 	cout << "\n\nSum of file sizes: " << sumOfFileSizes << "\n";
 }
 
+
 int main()
 {
 
 
 	ChessGame theGame{}; 
 
-	char oldPositionFile, newPositionFile;
-	int oldPositionRank, newPositionRank;
-
-	//int previousLineCountInClickCoordinatesFile = 0; 
-
-	std::string lockFilePath = "testingNodeJS/public/lockfile";
 
 	while (!theGame.isGameOver())
 	{
+		callNodeJS();
+		openPort3000_andDisplayChessBoard();
+	
+		cout << "Press ENTER once you've clicked the piece and its new position:\n";
+		std::cin.get(); 
 
-		cout << "Enter the FILE and RANK of the piece you want to move (ex: A8, H5, etc.)\n";
-		std::cin >> oldPositionFile >> oldPositionRank;
+		auto theTwoChosenPositions = theGame.getAndConfirmChessMove(); 
 
-		cout << "Where do you want to move to ?\n";
-		std::cin >> newPositionFile >> newPositionRank; 
-
-		if (std::cin.fail()) //ex: SOMEONE (not me) enters chess piece name as first input mistakenly ...
-		{
-			std::cin.clear();
-		}
-
-		theGame.movePiece(oldPositionFile, oldPositionRank , newPositionFile, newPositionRank);
-
+		theGame.movePiece(theTwoChosenPositions.at(0).first,
+			theTwoChosenPositions.at(0).second,
+			theTwoChosenPositions.at(1).first,
+			theTwoChosenPositions.at(1).second);
 
 		soundAlertIfImagesTakingUpTooMuchSpace();
-
-		waitForNodeJsToFinish(lockFilePath);
-
-
-		ifstream fin{ "testingNodeJS/public/clickCoordinates.txt" };
-		if (!fin)
-		{
-			cout << "FNFE\n";
-			std::cin.get();
-		}
-
-		cout << "Coordinates in file: \n";
-		string line; 
-
-		while (!fin.eof())
-		{
-			//int x, y; 
-			//fin >> x >> y; 
-
-			//if (fin.fail())
-			//{
-			//	fin.clear(); 
-			//}
-			std::getline(fin, line); 
-
-			cout << line << "\n";
-//			cout << x << " " << y << "\n";
-		}
-
-		killProcessOnPort(3000); 
-
 
 	}
 

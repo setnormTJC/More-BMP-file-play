@@ -135,6 +135,7 @@
     <ClCompile Include="ChessImageBMP.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ImageBMP.cpp" />
+    <ClCompile Include="NodeJSFunctions.cpp" />
     <ClCompile Include="sharedFunctions.cpp" />
     <ClCompile Include="SomeWindowsFunctions.cpp" />
   </ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="ChessGame.h" />
     <ClInclude Include="ChessImageBMP.h" />
     <ClInclude Include="ImageBMP.h" />
+    <ClInclude Include="NodeJSFunctions.h" />
     <ClInclude Include="sharedFunctions.h" />
     <ClInclude Include="someImageBMPTestingFunctions.h" />
     <ClInclude Include="SomeWindowsFunctions.h" />

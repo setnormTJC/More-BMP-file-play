@@ -22,6 +22,8 @@ class ChessImageBMP : public ImageBMP
 
 	/*Anticipate this function only being called by `drawPieces`*/
 	void drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y);
+
+	void generatePositionsToImageCoordinatesMap();
 public:
 
 
@@ -37,7 +39,8 @@ public:
 	/*for labeling ranks on chessboard*/
 	void drawNumbers();
 
-	void generatePositionsToImageCoordinatesMap();
+
+
 
 	/*Uses maps of pieceNames to images and pieceNames to coordinates - NOTE that neither of the maps is ALTERED by this method*/
 	void drawPieces(); 
@@ -54,7 +57,8 @@ public:
 	map <string, string> piecesToPositions;
 	//map <string, string> initialPositionsToPieceNames; 
 
+	map<pair<int, int>, string> imageCoordinatesToPositions{};
 
-
+	pair<char, int> convertImageCoordinatesToPosition(int x, int y);
 
 };

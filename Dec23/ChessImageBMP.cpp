@@ -8,6 +8,7 @@ ChessImageBMP::ChessImageBMP()
 
 	generatePositionsToImageCoordinatesMap();
 
+	imageCoordinatesToPositions = switchMapKeysAndValues(positionsToImageCoordinates);
 
 	pieceNames = mapPiecesToImages(); 
 
@@ -17,10 +18,8 @@ ChessImageBMP::ChessImageBMP()
 	//switch keys and values in the pieceToPosition map (may not be needed)
 	//initialPositionsToPieceNames = switchMapKeysAndValues(pieceNamesToPositions);
 
-
 	drawPieces(); 
 
-	
 }
 
 void ChessImageBMP::drawEmptyChessBoard()
@@ -228,6 +227,35 @@ vector<string> ChessImageBMP::mapPiecesToImages()
 	return pieceNames; 
 }
 
+pair<char, int> ChessImageBMP::convertImageCoordinatesToPosition(int x, int y)
+{
+	/*Ex: A8, H5, etc.*/
+	pair<char, int> imageCoordinatesAsChessPosition;
+	
+	/*NodeJS is returning "flipped" y value (y increases from top to bottom), so "convert" it*/
+	y = boardDimension - y; 
+
+	//imageCoordinates in imageCoordinatesToPositions are at bottom left of square on chessboard 
+	for (auto& currentPair : imageCoordinatesToPositions)
+	{
+		if ((x > currentPair.first.first && x < currentPair.first.first + SQUARE_WIDTH))
+		{
+			if (y > currentPair.first.second && y < currentPair.first.second + SQUARE_WIDTH)
+			{
+				char currentFile = currentPair.second.at(0);
+				int currentRank = currentPair.second.at(1) - 48;
+
+				imageCoordinatesAsChessPosition.first = currentFile;
+				imageCoordinatesAsChessPosition.second = currentRank;
+
+				return imageCoordinatesAsChessPosition;
+			}
+		}
+	}
+
+	return imageCoordinatesAsChessPosition; //this will be empty if the if statement is never true
+}
+
 void ChessImageBMP::drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y)
 {
 	swap(x, y);
@@ -277,6 +305,7 @@ void ChessImageBMP::generatePositionsToImageCoordinatesMap()
 
 
 }
+
 
 void ChessImageBMP::drawPieces()
 {

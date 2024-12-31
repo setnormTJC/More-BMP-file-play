@@ -46,12 +46,16 @@
             });
     
             function sendCoordinatesToServer(coordinates) {
+
+                const coordinatesText = coordinates.map(coord =>  `${coord.x},${coord.y}`).join('\n');
+                
                 fetch('/save-coordinates', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'text/plain'
                     },
-                    body: JSON.stringify(coordinates)
+                    // body: JSON.stringify(coordinates)
+                    body: coordinatesText
                 })
                 .then(response => response.json())
                 .then(data => {

@@ -17,7 +17,9 @@
 
 
 
-using std::vector, std::string, std::cout, std::map, std::getline; std::ifstream;
+using std::vector, std::string, std::cout, std::map;
+using std::getline; 
+using std::ifstream;
 
 
 void killProcessOnPort(int port);

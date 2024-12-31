@@ -9,6 +9,7 @@
 #include<chrono>  
 #include<thread>  //for sleeping thread before displaying updated chessboard after a move is made (or similar "events")
 
+#include"NodeJSFunctions.h"
 
 class PieceRules
 {
@@ -18,6 +19,14 @@ class PieceRules
 	static vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 	static vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 	static vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	//rook, bishop, queen
+	static vector<string> getRookPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	
+	/*Anticipate queen and rook calling this function*/
+	static vector<string> lookForVerticalMoves(int currentRank, char currentFile, const string& currentPieceName, bool isUp);
+	/*Anticipate queen and rook calling this function*/
+	static vector<string> lookForHorizontalMoves(int currentRank, char currentFile, const string& currentPieceName, bool isRight);
+
 
 public:
 	/*Static so that ChessGame class can call without having to instantiate an object*/
@@ -39,13 +48,6 @@ private:
 
 
 	void generatePiecesToPossiblePositions();
-
-	//vector<string> getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition);
-
-	//vector<string> getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	//vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	//vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
-	//vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 
 
 	/*
@@ -73,6 +75,8 @@ private: //just using the "indentation" here to "separate" member variables and 
 public: 
 	/************************public member functions ***********************************/
 	ChessGame();
+
+	array<pair<char, int>, 2> getAndConfirmChessMove();
 
 	/*little logic for now, just simple checks*/
 	void movePiece(const string& pieceName, const string& newPosition); 
