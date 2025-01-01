@@ -26,10 +26,15 @@ void soundAlertIfImagesTakingUpTooMuchSpace()
 		}
 	}
 
-	cout.imbue(std::locale{""}); //add commas every 3 digits for readability 
-	cout << "\n\nSum of file sizes: " << sumOfFileSizes << "\n";
+	//cout.imbue(std::locale{""}); //add commas every 3 digits for readability 
+	//cout << "\n\nSum of file sizes: " << sumOfFileSizes << "\n";
 }
 
+void displayOptions()
+{
+	cout << "1 - to continue, once you've clicked your piece and the position to move it to\n";
+	cout << "2 - to show all possible moves\n";
+}
 
 int main()
 {
@@ -43,8 +48,24 @@ int main()
 		callNodeJS();
 		openPort3000_andDisplayChessBoard();
 	
-		cout << "Press ENTER once you've clicked the piece and its new position:\n";
-		std::cin.get(); 
+		string response; 
+		displayOptions(); 
+		getline(std::cin, response); 
+
+		while (response != "1")
+		{
+			if (response == "2")
+			{
+				theGame.showAllPossibleMoves();
+			}
+
+			else
+			{
+				cout << "Unsupported option - enter 1 or 2 (for now)\n";
+			}
+			displayOptions(); 
+			getline(std::cin, response); 
+		}
 
 		auto theTwoChosenPositions = theGame.getAndConfirmChessMove(); 
 

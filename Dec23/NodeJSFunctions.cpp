@@ -1,4 +1,5 @@
 #include "NodeJSFunctions.h"
+#include "sharedFunctions.h"
 
 void callNodeJS()
 {
@@ -21,6 +22,8 @@ void openPort3000_andDisplayChessBoard()
 
 	browserThread.detach();
 }
+
+
 
 void killProcessOnPort(int port )
 {
@@ -77,13 +80,13 @@ array<pair<int, int>, 2>  readFileAndReturnCoordinatesClickedInBrowser()
 	ifstream fin{ coordinateFileName };
 	if (!fin)
 	{
-		cout << "FNFE\n";
+		cout << coordinateFileName << " not found\n";
 		return theTwoCoordinates;
 	}
 
 	else
 	{
-		cout << "file " << coordinateFileName << " opened successfully\n";
+		//cout << "file " << coordinateFileName << " opened successfully\n";
 	}
 	killProcessOnPort(3000); //process should be killed if file was able to be opened successfully: 
 

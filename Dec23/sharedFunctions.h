@@ -22,17 +22,36 @@ using std::getline;
 using std::ifstream;
 
 
+
+
+
+/*For drawing attention to checks, maybe "good" moves and "bad" moves later*/
+enum class TerminalColor {
+    Red = 31,
+    Green = 32,
+    Yellow = 33,
+    Blue = 34,
+    Magenta = 35,
+    Cyan = 36,
+    White = 37,
+    Default = 0
+};
+
+/*For drawing attention to checks, maybe "good" moves and "bad" moves later*/
+void setTerminalColor(TerminalColor color);
+
+void displayThatAPieceCanBeTaken(const string& currentPiece, const string& pieceThatCanBeTaken); 
+
 void killProcessOnPort(int port);
 
 vector<string> getPieceNames(const string& pieceColor);
+
+string getPieceColor(const string& fullPieceName);
+
 vector<vector<string>> getChessPositions();
-
-
 
 std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessPosition);
 string convertCharAndIntChessPositionToString(const char file, const int rank);
-
-
 
 
 map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
