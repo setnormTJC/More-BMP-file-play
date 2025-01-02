@@ -49,9 +49,9 @@ public:
 
 
 	/*NOTE: this method also returns vector<string> pieceNames*/
-	vector<string> mapPiecesToImages(); 
+	vector<string> mapPiecesToImages_andReturnPieces(); 
 
-	vector<string> pieceNames;
+	static vector<string> pieces;
 	//vector<string> positions = getChessPositions(); 
 
 	map <string, string> piecesToPositions;

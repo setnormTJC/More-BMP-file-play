@@ -174,6 +174,45 @@ bool isPositionInBounds(char file, int rank)
 
 }
 
+size_t findPieceValue(string fullPieceName)
+{
+	if (fullPieceName.find("Pawn") != string::npos)
+	{
+		return 1; 
+	}
+
+	else if (fullPieceName.find("Bishop") != string::npos)
+	{
+		return 3;
+	}
+
+	else if (fullPieceName.find("Knight") != string::npos)
+	{
+		return 3;
+	}
+
+	else if (fullPieceName.find("Rook") != string::npos)
+	{
+		return 5;
+	}
+
+	else if (fullPieceName.find("Queen") != string::npos)
+	{
+		return 9;
+	}
+	
+	else if (fullPieceName.find("King") != string::npos)
+	{
+		return 1000; //arbitrary-ish "large value
+	}
+
+	else
+	{
+		cout << "What piece is that?\n";
+		__debugbreak(); 
+	}
+}
+
 vector<string> flatten2DArray(vector<vector<string>>& twoDArray)
 {
 	vector<string> oneDArray;// { twoDArray.size()* twoDArray.at(0).size() };

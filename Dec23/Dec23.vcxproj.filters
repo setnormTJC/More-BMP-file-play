@@ -30,9 +30,6 @@
     <ClCompile Include="sharedFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SomeWindowsFunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NodeJSFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -53,10 +50,10 @@
     <ClInclude Include="ChessImageBMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SomeWindowsFunctions.h">
+    <ClInclude Include="NodeJSFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NodeJSFunctions.h">
+    <ClInclude Include="scrappedFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

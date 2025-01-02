@@ -67,7 +67,7 @@ int main()
 			getline(std::cin, response); 
 		}
 
-		auto theTwoChosenPositions = theGame.getAndConfirmChessMove(); 
+		auto theTwoChosenPositions = theGame.getAndConfirmMove(); 
 
 		theGame.movePiece(theTwoChosenPositions.at(0).first,
 			theTwoChosenPositions.at(0).second,

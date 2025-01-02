@@ -1,65 +1,87 @@
 #include "ChessGame.h"
 
 map<string, string> ChessGame::positionsToPieces; //this MUST be here since positionsToPieces is STATIC
-bool ChessGame::canTakeOpponentPiece = false;  //this also MUST be here - linker error occurs if not
-//bool ChessGame::isKingInCheck = false; 
-//bool ChessGame::isWhiteKingInCheck = false; 
-
+size_t ChessGame:: moveCount = 0; 
+ChessImageBMP ChessGame::boardImage{}; 
+map <string, vector<string>>ChessGame::piecesToMoves;
 
 #pragma region PieceRules
 
-vector<string> PieceRules::getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+vector<string> PieceRules::getWhitePawnMoves(int currentRank, char currentFile, const string& currentPiece)
 {
-	vector<string> possiblePositionsForWhitePawn;
+	vector<string> whitePawnMoves;
 	int newRank;
 	newRank = currentRank + 1;
 
-	string possiblePosition = currentFile + to_string(newRank);
-	string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+	string newPosition = currentFile + to_string(newRank);
+	string pieceAtNewPosition = ChessGame::getPieceAtPosition(newPosition);
 
-	if (contentsOfPossiblePosition == "")
+	if (pieceAtNewPosition == "")
 	{
-		possiblePositionsForWhitePawn.push_back(possiblePosition);
+		whitePawnMoves.push_back(newPosition);
 	}
 
 	if (currentRank == 2)
 	{
-		if (contentsOfPossiblePosition == "")
+		if (pieceAtNewPosition == "")
 			//ex: A2 pawn wants to move to A4 and A3 is EMPTY 
 		{
-			possiblePosition = currentFile + to_string(newRank + 1);
-			contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+			newPosition = currentFile + to_string(newRank + 1);
+			pieceAtNewPosition = ChessGame::getPieceAtPosition(newPosition);
 
-			if (contentsOfPossiblePosition == "")
+			if (pieceAtNewPosition == "")
 			{
-				possiblePositionsForWhitePawn.push_back(possiblePosition);
+				whitePawnMoves.push_back(newPosition);
 			}
 		}
 	}
 
 	//check for opponent on diagonal - 
-	string firstPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile - 1, currentRank + 1);
-	string secondPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile + 1, currentRank + 1);
+	string up1Left1 = convertCharAndIntChessPositionToString(currentFile - 1, currentRank + 1);
+	string up1Right1 = convertCharAndIntChessPositionToString(currentFile + 1, currentRank + 1);
 
-	string contentsOfFirstTakingPosition = ChessGame::getContentsOfPossiblePosition(firstPossibleTakingPosition);
-	if (contentsOfFirstTakingPosition.find("black") != string::npos)
+	string pieceAtUp1Left1 = ChessGame::getPieceAtPosition(up1Left1);
+	if (pieceAtUp1Left1.find("black") != string::npos)
 	{
-
-		displayThatAPieceCanBeTaken(currentPieceName, contentsOfFirstTakingPosition);
-		
-		possiblePositionsForWhitePawn.push_back(firstPossibleTakingPosition);
+		if (ChessGame::moveCount % 2 == 1) //only display if piece can be taken to the color about to move 
+		{
+			displayThatAPieceCanBeTaken(currentPiece, pieceAtUp1Left1);
+		}
+		whitePawnMoves.push_back(up1Left1);
 	}
 
-	string contentsOfSecondTakingPosition = ChessGame::getContentsOfPossiblePosition(secondPossibleTakingPosition);
+	string pieceAtUp1Right1 = ChessGame::getPieceAtPosition(up1Right1);
 
-	if (contentsOfSecondTakingPosition.find("black") != string::npos)
+	if (pieceAtUp1Right1.find("black") != string::npos)
 	{
-		displayThatAPieceCanBeTaken(currentPieceName, contentsOfSecondTakingPosition);
-		possiblePositionsForWhitePawn.push_back(secondPossibleTakingPosition);
+		if (ChessGame::moveCount % 2 == 1) //only display if piece can be taken to the color about to move 
+		{
+			displayThatAPieceCanBeTaken(currentPiece, pieceAtUp1Right1);
+		}
+		whitePawnMoves.push_back(up1Right1);
 	}
 
-	//if (currentRank )
-	return possiblePositionsForWhitePawn;
+
+	string currentPosition = convertCharAndIntChessPositionToString(currentFile, currentRank);
+
+	//if (ChessGame::moveCount >= 3)
+	//{
+	//	/*For each whitePawnMove, check if any lead to check on white king*/
+	//	for (const auto& currentMove : whitePawnMoves)
+	//	{
+	//		if (ChessGame::doesMoveResultInSelfCheck(currentPiece, currentPosition, currentMove, "white"))
+	//		{
+	//			cout << "Moving " << currentPiece << " to " << currentMove << " would put white king in check\n";
+	//			cout << "Removing that position from the list of moves available to " << currentPiece << "\n";
+
+	//			auto moveIterator = std::find(whitePawnMoves.begin(), whitePawnMoves.end(), currentMove);
+
+	//			whitePawnMoves.erase(moveIterator);
+	//		}
+	//	}
+	//}
+
+	return whitePawnMoves;
 }
 
 vector<string> PieceRules::getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
@@ -70,7 +92,7 @@ vector<string> PieceRules::getBlackPawnPossiblePositions(int currentRank, char c
 	//black pawns "usually" decrement rank by 1
 	newRank = currentRank - 1;
 	string possiblePosition = currentFile + to_string(newRank);
-	string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+	string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
 	if (contentsOfPossiblePosition == "") //space is empty 
 		//(not occupied by friend, and pawns cannot take unless on a diagonal) 
@@ -85,7 +107,7 @@ vector<string> PieceRules::getBlackPawnPossiblePositions(int currentRank, char c
 			//ex: B7 pawn wants to move to B5 and B6 is EMPTY 
 		{
 			possiblePosition = currentFile + to_string(newRank - 1);
-			contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+			contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 			if (contentsOfPossiblePosition == "")
 			{
 				possiblePositionsForBlackPawn.push_back(possiblePosition);
@@ -97,18 +119,24 @@ vector<string> PieceRules::getBlackPawnPossiblePositions(int currentRank, char c
 	string firstPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile - 1, currentRank - 1);
 	string secondPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile + 1, currentRank - 1);
 
-	string contentsOfFirstTakingPosition = ChessGame::getContentsOfPossiblePosition(firstPossibleTakingPosition);
+	string contentsOfFirstTakingPosition = ChessGame::getPieceAtPosition(firstPossibleTakingPosition);
 	if (contentsOfFirstTakingPosition.find("white") != string::npos)
 	{
-		displayThatAPieceCanBeTaken(currentPieceName, contentsOfFirstTakingPosition);
+		if (ChessGame::moveCount % 2 == 0)  
+		{
+			displayThatAPieceCanBeTaken(currentPieceName, contentsOfFirstTakingPosition);
+		}
 		possiblePositionsForBlackPawn.push_back(firstPossibleTakingPosition);
 	}
 
-	string contentsOfSecondTakingPosition = ChessGame::getContentsOfPossiblePosition(secondPossibleTakingPosition);
+	string contentsOfSecondTakingPosition = ChessGame::getPieceAtPosition(secondPossibleTakingPosition);
 
 	if (contentsOfSecondTakingPosition.find("white") != string::npos)
 	{
-		displayThatAPieceCanBeTaken(currentPieceName, contentsOfSecondTakingPosition);
+		if (ChessGame::moveCount % 2 == 0) 
+		{
+			displayThatAPieceCanBeTaken(currentPieceName, contentsOfSecondTakingPosition);
+		}
 		possiblePositionsForBlackPawn.push_back(secondPossibleTakingPosition);
 	}
 
@@ -139,7 +167,7 @@ vector<string> PieceRules::getKingPossiblePositions(int currentRank, char curren
 			if (isPositionInBounds(newFile, newRank))
 			{
 				string possiblePosition = newFile + to_string(newRank);
-				string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
 				if (contentsOfPossiblePosition == "") //possible position is free to move to
 				{
@@ -207,9 +235,9 @@ vector<string> PieceRules::getKnightPossiblePositions(int currentRank, char curr
 
 		string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-		string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+		string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-		string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+		string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 		if (relationship == "Neutral" || relationship == "Foe")
 		{
@@ -330,9 +358,9 @@ vector<string> PieceRules::lookForDiagonalMoves(int currentRank, char currentFil
 					{
 						string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-						string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+						string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-						string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+						string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 						if (relationship == "Neutral" || relationship == "Foe")
 						{
@@ -388,9 +416,9 @@ vector<string> PieceRules::lookForVerticalMoves(int currentRank, char currentFil
 			{
 				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-				string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-				string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 				size_t previousNumberOfPossibilities = possibleVerticalMoves.size();
 				if (relationship == "Neutral" || relationship == "Foe")
@@ -435,9 +463,9 @@ vector<string> PieceRules::lookForVerticalMoves(int currentRank, char currentFil
 			{
 				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-				string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-				string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 				size_t previousNumberOfPossibilities = possibleVerticalMoves.size();
 				if (relationship == "Neutral" || relationship == "Foe")
@@ -488,9 +516,9 @@ vector<string> PieceRules::lookForHorizontalMoves(int currentRank, char currentF
 			{
 				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-				string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-				string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 				size_t previousNumberOfPossibilities = possibleHorizontalMoves.size();
 				if (relationship == "Neutral" || relationship == "Foe")
@@ -548,9 +576,9 @@ vector<string> PieceRules::lookForHorizontalMoves(int currentRank, char currentF
 			{
 				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
 
-				string contentsOfPossiblePosition = ChessGame::getContentsOfPossiblePosition(possiblePosition);
+				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
 
-				string relationship = ChessGame::getFriendOrFoeOrNeutral(currentPieceName, contentsOfPossiblePosition);
+				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
 
 				size_t previousNumberOfPossibilities = possibleHorizontalMoves.size();
 				if (relationship == "Neutral" || relationship == "Foe")
@@ -611,7 +639,7 @@ vector<string> PieceRules::getPossiblePositionsForCurrentPiece(const string& cur
 	else if (currentPieceName.find("whitePawn") != string::npos)
 	{
 		possiblePositionsForCurrentPiece =
-			getWhitePawnPossiblePositions(currentRank, currentFile, currentPieceName);
+			getWhitePawnMoves(currentRank, currentFile, currentPieceName);
 
 	}
 
@@ -666,22 +694,37 @@ PieceRules::PieceRules()
 #pragma endregion
 
 
+//bool ChessGame::is_check(move)
+//{
+//
+//	// 1. Simulate the move on a copy of the board
+//	Board temp_board = board;
+//	temp_board.apply_move(move);
+//
+//	// 2. Locate the king
+//	Position king_pos = temp_board.find_king(move.player);
+//
+//	// 3. & 4. Check if any opponent piece attacks the king
+//	for (const Piece& piece : temp_board.get_opponent_pieces(move.player)) {
+//		if (piece.can_attack(king_pos, temp_board)) {
+//			// 5. Move puts the king in check
+//			return true;
+//		}
+//	}
+//
+//	// 6. Move does not put the king in check
+//	return false;
+//	
+//}
+
 ChessGame::ChessGame()
 {
+	
+	boardImage.pieces = boardImage.mapPiecesToImages_andReturnPieces(); //stupid having to do this twice ...
 
 	positionsToPieces = switchMapKeysAndValues(boardImage.piecesToPositions);
 
-	generatePiecesToPossiblePositions(); 
-
-	piecesToValues = 
-	{
-		{ "Pawn", 1 },
-		{ "Bishop", 3 },
-		{ "Knight", 3 },
-		{ "Rook", 5 },
-		{ "Queen", 9 },
-		{ "King", 1'000 }//arbitary "large" value 
-	};
+	getPiecesToMoves(); 
 
 
 	string baseFolderOfNodeJS = "testingNodeJS/public/";
@@ -692,7 +735,7 @@ ChessGame::ChessGame()
 
 void ChessGame::showAllPossibleMoves()
 {
-	for (const auto& currentPair : piecesToPossiblePositions)
+	for (const auto& currentPair : piecesToMoves)
 	{
 		if (currentPair.second.size() != 0)
 		{
@@ -717,7 +760,7 @@ void ChessGame::showAllPossibleMoves()
 	}
 }
 
-array<pair<char, int>, 2> ChessGame::getAndConfirmChessMove()
+array<pair<char, int>, 2> ChessGame::getAndConfirmMove()
 {
 	array<pair<int, int>, 2> theTwoCoordinates = readFileAndReturnCoordinatesClickedInBrowser();
 
@@ -830,10 +873,10 @@ bool ChessGame::isGameOver()
 
 bool ChessGame::isPieceOnBoard(const string& pieceName)
 {
-	auto pieceNameIterator = std::find(boardImage.pieceNames.begin(), boardImage.pieceNames.end(), pieceName); 
+	auto pieceNameIterator = std::find(boardImage.pieces.begin(), boardImage.pieces.end(), pieceName); 
 	//anticipate ERASING pieceName from vector `pieceNames` when pieces get "taken" in later functions...
 
-	return (pieceNameIterator != boardImage.pieceNames.end());
+	return (pieceNameIterator != boardImage.pieces.end());
 }
 
 
@@ -866,8 +909,8 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 	boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
 
 	//once a piece has moved, possible positions change for ALL pieces, so clear the possible positions map
-	piecesToPossiblePositions.clear();
-	generatePiecesToPossiblePositions();
+	piecesToMoves.clear();
+	getPiecesToMoves();
 	
 	if (checkForCheck(getPieceColor(pieceName))) 
 	{
@@ -878,17 +921,40 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		if (pieceTaken)
 		{
 			positionsToPieces.insert({ oldPosition, takenPieceName });
-			boardImage.pieceNames.push_back(takenPieceName); 
+			boardImage.pieces.push_back(takenPieceName); 
 		}
 
 		boardImage.piecesToPositions.clear(); 
 		boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces); 
-		piecesToPossiblePositions.clear(); 
-		generatePiecesToPossiblePositions(); 
+		piecesToMoves.clear(); 
+		getPiecesToMoves(); 
 
+
+		//remove illegal moves that cause a check: 
+
+		//for (auto& pieceMoves : piecesToMoves)
+		//{
+		//	auto& moves = pieceMoves.second;
+		//	moves.erase(
+		//		std::remove_if(
+		//			moves.begin(),
+		//			moves.end(),
+		//			[&](const string& move) {
+		//				return checkForCheck(getPieceColor(pieceMoves.first));
+		//			}),
+		//		moves.end());
+		//}
+
+		cout << pieceName << " cannot move to " << newPosition << " because\n";
 
 		cout << "AFTER updating, " << getPieceColor(pieceName) << " is in check!\n";
 		cout << "- try another move!\n";
+
+		auto iteratorToNewPosition = std::find(
+			piecesToMoves.at(pieceName).begin(), piecesToMoves.at(pieceName).end(), newPosition); 
+
+		piecesToMoves.at(pieceName).erase(iteratorToNewPosition); 
+
 
 		return; //so moveCount will not increment and new board will not be drawn 
 	}
@@ -904,18 +970,18 @@ void ChessGame::takePiece(const string& pieceName, const string& newPosition)
 	string opponentPieceName; 
 
 	auto vectorIteratorOfPieceToTake =
-		std::find(boardImage.pieceNames.begin(), boardImage.pieceNames.end(),
+		std::find(boardImage.pieces.begin(), boardImage.pieces.end(),
 			positionsToPieces.find(newPosition)->second);
 
-	opponentPieceName = *vectorIteratorOfPieceToTake; //dereferenced iterator
+	opponentPieceName = *vectorIteratorOfPieceToTake; //note the dereferenced iterator
 
 	//erase opponent from list of pieces: 
-	boardImage.pieceNames.erase(vectorIteratorOfPieceToTake);
+	boardImage.pieces.erase(vectorIteratorOfPieceToTake);
 
 	//erase opponent from map
 	positionsToPieces.erase(newPosition);
 
-	size_t pieceValue = findPieceValue(opponentPieceName); //use a map of pieceNames to point values later!
+	size_t pieceValue = findPieceValue(opponentPieceName); 
 
 
 	if (pieceName.find("black") != string::npos)
@@ -937,16 +1003,6 @@ void ChessGame::takePiece(const string& pieceName, const string& newPosition)
 	cout << "Score is now (White v Black) " << whiteScore << " to " << blackScore << "\n";
 }
 
-size_t ChessGame::findPieceValue(string fullPieceName)
-{
-	for (const auto& currentPair : piecesToValues)
-	{
-		if (fullPieceName.find(currentPair.first) != string::npos)
-		{
-			return currentPair.second;
-		}
-	}
-}
 
 void ChessGame::drawBoardHelper(const string& oldPosition)
 {
@@ -956,6 +1012,84 @@ void ChessGame::drawBoardHelper(const string& oldPosition)
 	string baseFolderOfNodeJS = "testingNodeJS/public/";
 	string filename = baseFolderOfNodeJS + "chessboard.bmp"; //note that this will overwrite!
 	boardImage.writeImageFile(filename);
+}
+
+bool ChessGame::doesMoveResultInSelfCheck(const string& piece, 
+	const string& oldPosition, const string& newPosition, const string& color)
+{
+
+	//first, make a copy of the data (board state) before modifying 
+	auto copyOfPiecesToPositions = boardImage.piecesToPositions;
+	auto copyOfPositionsToPieces = positionsToPieces;
+	auto copyOfPieces = boardImage.pieces; 
+	
+
+
+	//now modify the originals: 
+	string contentsOfNewPosition = getPieceAtPosition(newPosition); 
+
+	//first check if opponent can be taken (needs to be removed from board state variables): 
+	if (getPieceRelationship(piece, contentsOfNewPosition) == "Foe")
+	{
+		string opponentName = getPieceAtPosition(newPosition); 
+		//first remove the oppoenent piece from the list of pieces 
+		auto vectorIteratorToOpponent =
+			std::find(boardImage.pieces.begin(), boardImage.pieces.end(), opponentName);
+
+		boardImage.pieces.erase(vectorIteratorToOpponent);
+
+		//now remove the opponent from both maps: 
+		boardImage.piecesToPositions.erase(opponentName); 
+
+		positionsToPieces.erase(newPosition); 
+	}
+
+	boardImage.piecesToPositions.erase(piece); 
+	boardImage.piecesToPositions.insert({ piece, newPosition });
+
+	positionsToPieces.erase(oldPosition); 
+	positionsToPieces.insert({ newPosition, piece }); 
+
+
+	//now get NEW possible moves: 
+	getPiecesToMoves(); 
+
+	auto iteratorToKing = boardImage.piecesToPositions.find(color + "King");
+	//iteratorToKing should NEVER be out of bounds of map, so no safety check here 
+	auto kingsPosition = iteratorToKing->second;
+
+	//now check if any possible move puts check on king
+	bool moveDoesResultInSelfCheck = false; 
+	for (auto& singlePieceToMoves : piecesToMoves)
+	{
+		if (moveDoesResultInSelfCheck)
+		{
+			break; 
+		}
+		string piece = singlePieceToMoves.first; 
+		if (piece.find(color) == string::npos)
+		{
+			for (auto& move : singlePieceToMoves.second)
+			{
+				if (move == kingsPosition)
+				{
+					moveDoesResultInSelfCheck = true; 
+					cout << piece << " can put " << color << " king in check\n";
+					break; 
+				}
+			}
+		}
+	}
+
+	//now set the originals back to the copies: 
+	boardImage.piecesToPositions = copyOfPiecesToPositions; 
+	positionsToPieces = copyOfPositionsToPieces;
+	boardImage.pieces = copyOfPieces;
+
+	//and regenerate the (original) piecesToMoves: 
+	getPiecesToMoves(); 
+
+	return moveDoesResultInSelfCheck;
 }
 
 
@@ -994,10 +1128,10 @@ void ChessGame::movePiece
 		}
 
 		//confirm that newPosition is in the list of possible positions for the given piece:
-		auto newPositionIterator = std::find(piecesToPossiblePositions.at(pieceName).begin(),
-			piecesToPossiblePositions.at(pieceName).end(), newPosition);
+		auto newPositionIterator = std::find(piecesToMoves.at(pieceName).begin(),
+			piecesToMoves.at(pieceName).end(), newPosition);
 
-		if (newPositionIterator == piecesToPossiblePositions.at(pieceName).end())
+		if (newPositionIterator == piecesToMoves.at(pieceName).end())
 		{
 			cout << newPosition << " is not an allowed position for " << pieceName
 				<< " - the position is either occupied by a friend, or " << pieceName << " cannot move in that way\n";
@@ -1022,13 +1156,13 @@ void ChessGame::movePiece
 }
 
 
-void ChessGame::generatePiecesToPossiblePositions()
+void ChessGame::getPiecesToMoves()
 {
 
 
-	for (int i = 0; i < boardImage.pieceNames.size(); ++i)
+	for (int i = 0; i < boardImage.pieces.size(); ++i)
 	{
-		string currentPieceName = boardImage.pieceNames.at(i);
+		string currentPieceName = boardImage.pieces.at(i);
 
 		string currentPosition = boardImage.piecesToPositions.find(currentPieceName)->second;
 
@@ -1037,13 +1171,12 @@ void ChessGame::generatePiecesToPossiblePositions()
 		vector<string> possiblePositionsForCurrentPiece =
 			PieceRules::getPossiblePositionsForCurrentPiece(currentPieceName, currentPosition);
 
-		piecesToPossiblePositions.insert({ currentPieceName, possiblePositionsForCurrentPiece });
+		piecesToMoves.insert({ currentPieceName, possiblePositionsForCurrentPiece });
 	}
+
 }
 
-
-
-string ChessGame::getContentsOfPossiblePosition(const string& possiblePosition)
+string ChessGame::getPieceAtPosition(const string& possiblePosition)
 {
 
 	auto possiblePositionIterator = positionsToPieces.find(possiblePosition); 
@@ -1059,25 +1192,26 @@ string ChessGame::getContentsOfPossiblePosition(const string& possiblePosition)
 	}
 }
 
-string ChessGame::getFriendOrFoeOrNeutral(const string& contentsOfFirstPosition, const string& contentsOfSecondPosition)
+/*Consider updating arg1 to currentPiece and arg2 to possible position*/
+string ChessGame::getPieceRelationship(const string& currentPiece, const string& contentsOfNewPosition)
 {
 
-	if (contentsOfFirstPosition == "" || contentsOfSecondPosition == "")
+	if (/*currentPiece == "" || */contentsOfNewPosition == "")
 	{
-		return "Neutral"; // if either position does not contain a piece, neither a friend nor a foe is there
+		return "Neutral"; // if position to move to does not contain a piece, neither a friend nor a foe is there
 	}
 
-	else if (contentsOfFirstPosition.find("white") != string::npos
+	else if (currentPiece.find("white") != string::npos
 		&&
-		contentsOfSecondPosition.find("white") != string::npos
+		contentsOfNewPosition.find("white") != string::npos
 		)
 	{
 		return "Friend";
 	}
 
-	else if (contentsOfFirstPosition.find("black") != string::npos
+	else if (currentPiece.find("black") != string::npos
 		&&
-		contentsOfSecondPosition.find("black") != string::npos
+		contentsOfNewPosition.find("black") != string::npos
 		)
 	{
 		return "Friend";
@@ -1101,7 +1235,7 @@ bool ChessGame::checkForCheck(const string& colorToCheckForCheck)
 
 	auto positionOfKing = kingIterator->second;
 
-	for (const auto& currentPair : piecesToPossiblePositions)
+	for (const auto& currentPair : piecesToMoves)
 	{
 		for (const auto& possiblePosition : currentPair.second)
 		{

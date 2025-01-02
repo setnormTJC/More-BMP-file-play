@@ -1,5 +1,8 @@
 #include"ChessImageBMP.h"
 
+vector<string> ChessImageBMP::pieces;// = ChessImageBMP::mapPiecesToImages_andReturnPieces();// ? (make static ? )
+//map<string, ImageBMP> ChessImageBMP::piecesToImages;
+
 ChessImageBMP::ChessImageBMP()
 	:ImageBMP(boardDimension, boardDimension, ColorEnum::BoardBorder)
 {
@@ -10,10 +13,10 @@ ChessImageBMP::ChessImageBMP()
 
 	imageCoordinatesToPositions = switchMapKeysAndValues(positionsToImageCoordinates);
 
-	pieceNames = mapPiecesToImages(); 
-
+	pieces = mapPiecesToImages_andReturnPieces(); 
+	
 	//get INITIAL positions of all pieces 
-	piecesToPositions = getPiecesToInitialPositions(pieceNames);
+	piecesToPositions = getPiecesToInitialPositions(pieces);
 
 	//switch keys and values in the pieceToPosition map (may not be needed)
 	//initialPositionsToPieceNames = switchMapKeysAndValues(pieceNamesToPositions);
@@ -189,7 +192,7 @@ void ChessImageBMP::drawNumbers()
 }
 
 
-vector<string> ChessImageBMP::mapPiecesToImages()
+vector<string> ChessImageBMP::mapPiecesToImages_andReturnPieces()
 {
 	//first get white piece names: 
 	string pieceColor = "white";
@@ -310,7 +313,7 @@ void ChessImageBMP::generatePositionsToImageCoordinatesMap()
 void ChessImageBMP::drawPieces()
 {
 
-	for (const auto& currentPieceName : pieceNames) //for all pieces NOT YET TAKEN (reduce waste)
+	for (const auto& currentPieceName : pieces) //for all pieces NOT YET TAKEN (reduce waste)
 	{
 		ImageBMP currentPieceImage;
 		string currentPosition;

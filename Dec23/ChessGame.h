@@ -4,8 +4,6 @@
 
 #include"ChessImageBMP.h"
 
-
-
 #include<chrono>  
 #include<thread>  //for sleeping thread before displaying updated chessboard after a move is made (or similar "events")
 
@@ -13,9 +11,7 @@
 
 class PieceRules
 {
-
-
-	static vector<string> getWhitePawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+	static vector<string> getWhitePawnMoves(int currentRank, char currentFile, const string& currentPiece);
 	static vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 	static vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 	static vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
@@ -49,13 +45,9 @@ public:
 
 class ChessGame
 {
-private: 
+private: //member functions
 	bool isThatColorTurn(const string& pieceName);
 	bool isPieceOnBoard(const string& pieceName);
-
-
-	void generatePiecesToPossiblePositions();
-
 
 	/*
 	@returns 3 possibilites -
@@ -63,60 +55,61 @@ private:
 	2) a friend piece
 	3) an opponent's piece
 	*/
-	static string getContentsOfPossiblePosition(const string& possiblePosition);
+	static string getPieceAtPosition(const string& possiblePosition);
 
-	static string getFriendOrFoeOrNeutral(const string& contentsOfFirstPosition, const string& contentsOfSecondPosition);
+	static string getPieceRelationship(const string& currentPiece, const string& contentsOfNewPosition);
+
+	/*modifies: piecesToPossiblePositions
+	* reads:
+	*/
+	static void getPiecesToMoves();
 	
+
 	/*Trying to be cute with the function name here
-	This method looks through boardImage.positionsToPieces for the king's location
+	This method looks through boardImage.piecesToPositions for the king's location
 	Then it looks through piecesToPossiblePositions to see if any (enemy) pieces 
 	*/
 	bool checkForCheck(const string& colorToCheckForCheck);
 
 	/*Anticipate that this "helper" function will only be called by `movePiece`*/
-	void movePieceHelper(const string& pieceName, const string& newPosition);
+	void movePieceHelper(const string& piece, const string& newPosition);
 
-
-	void takePiece(const string& pieceName, const string& newPosition);
-
-	size_t findPieceValue(string fullPieceName);
+	void takePiece(const string& piece, const string& newPosition);
 
 	void drawBoardHelper(const string& oldPosition);
 
-private: //just using the "indentation" here to "separate" member variables and member functions 
+	/*TEMPORARILY modifies board state, checks for check, then resets the board state */
+	static bool doesMoveResultInSelfCheck(const string& piece, const string& oldPosition, const string& newPosition, const string& color);
+
+private: //member variables  (also private)
 	
-	map<string, size_t> piecesToValues;
+	static map<string, string> positionsToPieces;
 
-	static map<string, string> positionsToPieces;// = switchMapKeysAndValues(boardImage.pieceNamesToPositions);
+	/*ex: "whitePawnE2" will be mapped to {E3, E4} initially*/
+	static map <string, vector<string>> piecesToMoves;
 
-	map <string, vector<string>> piecesToPossiblePositions;
+	/*antipcated way of calling this function - 
+	ex: at END of getWhitePawnMoves, just before returning whitePawnMoves: 
 
-	size_t moveCount = 0; 
+	loop through whitePawnMoves
+	if is_check(move), 
 
-	//static to allow PieceRules class access without having to instantate ChessGame object 
-	static bool canTakeOpponentPiece;// = false; 
+	then remove from the list of whitePawnMoves 
 
-	//static bool isKingInCheck; 
-
-	//static bool isWhiteKingInCheck; '
-
-
-
-
+	*/
+	bool is_check(const string& move); 
 public: 
 	/************************public member functions ***********************************/
 	ChessGame();
 
 	void showAllPossibleMoves(); 
 
-	array<pair<char, int>, 2> getAndConfirmChessMove();
-
+	array<pair<char, int>, 2> getAndConfirmMove();
 
 	/*an overloaded that allows user to specify start pos and end pos (probably more friendly)
 	@returns nothing - but NOTE that this overload of movePiece calls the OTHER overload of movePiece (which does all of the work) 
 	*/
-	void movePiece(const char oldPositionFile, const int oldPositionRank, const char newPositionFile, const int newPositionRank);
-
+	void movePiece(const char oldFile, const int oldRank, const char newFile, const int newRank);
 
 	bool isGameOver();
 public: 
@@ -126,7 +119,9 @@ public:
 	//ex: if whiteScore > blackScore, white is "winnning" 
 	size_t whiteScore = 0; 
 
-	ChessImageBMP boardImage{};
+	static size_t moveCount; // initialized to 0 in ChessGame.cpp at top of file
+
+	static ChessImageBMP boardImage;
 
 	friend class PieceRules; 
 

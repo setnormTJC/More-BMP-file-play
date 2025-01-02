@@ -37,12 +37,13 @@ enum class TerminalColor {
     Default = 0
 };
 
-/*For drawing attention to checks, maybe "good" moves and "bad" moves later*/
-void setTerminalColor(TerminalColor color);
+
+
+
+
+
 
 void displayThatAPieceCanBeTaken(const string& currentPiece, const string& pieceThatCanBeTaken); 
-
-void killProcessOnPort(int port);
 
 vector<string> getPieceNames(const string& pieceColor);
 
@@ -57,6 +58,11 @@ string convertCharAndIntChessPositionToString(const char file, const int rank);
 map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
 
 bool isPositionInBounds(char file, int rank);
+
+/*Ex: 3 pts for bishop and knight, 1 for pawn, etc.*/
+size_t findPieceValue(string fullPieceName);
+
+
 
 
 
@@ -73,7 +79,17 @@ map<T2, T1> switchMapKeysAndValues(map<T1, T2>& originalMap)
 	return switchedMap; 
 }
 
+
+
+
+
+
+
 vector<string> flatten2DArray(vector<vector<string>>& twoDArray);
 
 /*ex: if current hour and minute is 3:47 pm, this method returns 15_47 (zulu time)*/
 string getCurrentHourAndMinute(); 
+
+
+/*For drawing attention to checks, maybe "good" moves and "bad" moves later*/
+void setTerminalColor(TerminalColor color);
