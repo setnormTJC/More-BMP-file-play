@@ -69,6 +69,38 @@ string getPieceColor(const string& fullPieceName)
 	}
 }
 
+
+string getPieceRelationship(const string& currentPiece, const string& contentsOfNewPosition)
+{
+
+	if (/*currentPiece == "" || */contentsOfNewPosition == "")
+	{
+		return "Neutral"; // if position to move to does not contain a piece, neither a friend nor a foe is there
+	}
+
+	else if (currentPiece.find("white") != string::npos
+		&&
+		contentsOfNewPosition.find("white") != string::npos
+		)
+	{
+		return "Friend";
+	}
+
+	else if (currentPiece.find("black") != string::npos
+		&&
+		contentsOfNewPosition.find("black") != string::npos
+		)
+	{
+		return "Friend";
+	}
+
+	else //IS the only other possibility that one is white and the other is black? 
+	{
+		return "Foe";
+	}
+}
+
+
 vector<vector<string>> getChessPositions()
 {
 	const string ranks = "ABCDEFGH";

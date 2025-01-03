@@ -42,7 +42,709 @@ std::condition_variable queueCV;
 //    return simulatedPiecesToPossiblePositions;
 //}
 
+class PieceMoveRules 
+{
+    static vector<string> getWhitePawnMoves(int currentRank, char currentFile, const string& currentPiece);
+    static vector<string> getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+    static vector<string> getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+    static vector<string> getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
 
+    static vector<string> getRookPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+    static vector<string> getBishopPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+    static vector<string> getQueenPossiblePositions(int currentRank, char currentFile, const string& currentPieceName);
+
+
+    /*Anticipate queen and rook calling this function*/
+    static vector<string> lookForVerticalMoves(int currentRank, char currentFile, const string& currentPieceName, bool isUp);
+    /*Anticipate queen and rook calling this function*/
+    static vector<string> lookForHorizontalMoves(int currentRank, char currentFile, const string& currentPieceName, bool isRight);
+
+    static vector<string> lookForDiagonalMoves(int currentRank, char currentFile, const string& currentPieceName);
+
+
+public:
+    /*Static so that ChessGame class can call without having to instantiate an object*/
+    static vector<string> getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition);
+
+
+
+    PieceMoveRules();
+
+
+};
+
+
+#pragma region PieceRules
+
+//vector<string> PieceMoveRules::getWhitePawnMoves(int currentRank, char currentFile, const string& currentPiece)
+//{
+//	vector<string> whitePawnMoves;
+//	int newRank;
+//	newRank = currentRank + 1;
+//
+//	string newPosition = currentFile + to_string(newRank);
+//	string pieceAtNewPosition = ChessGame::getPieceAtPosition(newPosition);
+//
+//	if (pieceAtNewPosition == "")
+//	{
+//		whitePawnMoves.push_back(newPosition);
+//	}
+//
+//	if (currentRank == 2)
+//	{
+//		if (pieceAtNewPosition == "")
+//			//ex: A2 pawn wants to move to A4 and A3 is EMPTY 
+//		{
+//			newPosition = currentFile + to_string(newRank + 1);
+//			pieceAtNewPosition = ChessGame::getPieceAtPosition(newPosition);
+//
+//			if (pieceAtNewPosition == "")
+//			{
+//				whitePawnMoves.push_back(newPosition);
+//			}
+//		}
+//	}
+//
+//	//check for opponent on diagonal - 
+//	string up1Left1 = convertCharAndIntChessPositionToString(currentFile - 1, currentRank + 1);
+//	string up1Right1 = convertCharAndIntChessPositionToString(currentFile + 1, currentRank + 1);
+//
+//	string pieceAtUp1Left1 = ChessGame::getPieceAtPosition(up1Left1);
+//	if (pieceAtUp1Left1.find("black") != string::npos)
+//	{
+//		if (ChessGame::moveCount % 2 == 1) //only display if piece can be taken to the color about to move 
+//		{
+//			displayThatAPieceCanBeTaken(currentPiece, pieceAtUp1Left1);
+//		}
+//		whitePawnMoves.push_back(up1Left1);
+//	}
+//
+//	string pieceAtUp1Right1 = ChessGame::getPieceAtPosition(up1Right1);
+//
+//	if (pieceAtUp1Right1.find("black") != string::npos)
+//	{
+//		if (ChessGame::moveCount % 2 == 1) //only display if piece can be taken to the color about to move 
+//		{
+//			displayThatAPieceCanBeTaken(currentPiece, pieceAtUp1Right1);
+//		}
+//		whitePawnMoves.push_back(up1Right1);
+//	}
+//
+//
+//	string currentPosition = convertCharAndIntChessPositionToString(currentFile, currentRank);
+//
+//
+//	return whitePawnMoves;
+//}
+
+//vector<string> PieceMoveRules::getBlackPawnPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	int newRank;
+//	vector<string> possiblePositionsForBlackPawn;
+//
+//	//black pawns "usually" decrement rank by 1
+//	newRank = currentRank - 1;
+//	string possiblePosition = currentFile + to_string(newRank);
+//	string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//	if (contentsOfPossiblePosition == "") //space is empty 
+//		//(not occupied by friend, and pawns cannot take unless on a diagonal) 
+//	{
+//		possiblePositionsForBlackPawn.push_back(possiblePosition);
+//	}
+//
+//	//allow moving two positions only if rank is 7 (pawn has not yet moved): 
+//	if (currentRank == 7)
+//	{
+//		if (contentsOfPossiblePosition == "")
+//			//ex: B7 pawn wants to move to B5 and B6 is EMPTY 
+//		{
+//			possiblePosition = currentFile + to_string(newRank - 1);
+//			contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//			if (contentsOfPossiblePosition == "")
+//			{
+//				possiblePositionsForBlackPawn.push_back(possiblePosition);
+//			}
+//		}
+//	}
+//
+//	//check for opponent on diagonal - 
+//	string firstPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile - 1, currentRank - 1);
+//	string secondPossibleTakingPosition = convertCharAndIntChessPositionToString(currentFile + 1, currentRank - 1);
+//
+//	string contentsOfFirstTakingPosition = ChessGame::getPieceAtPosition(firstPossibleTakingPosition);
+//	if (contentsOfFirstTakingPosition.find("white") != string::npos)
+//	{
+//		if (ChessGame::moveCount % 2 == 0)  
+//		{
+//			displayThatAPieceCanBeTaken(currentPieceName, contentsOfFirstTakingPosition);
+//		}
+//		possiblePositionsForBlackPawn.push_back(firstPossibleTakingPosition);
+//	}
+//
+//	string contentsOfSecondTakingPosition = ChessGame::getPieceAtPosition(secondPossibleTakingPosition);
+//
+//	if (contentsOfSecondTakingPosition.find("white") != string::npos)
+//	{
+//		if (ChessGame::moveCount % 2 == 0) 
+//		{
+//			displayThatAPieceCanBeTaken(currentPieceName, contentsOfSecondTakingPosition);
+//		}
+//		possiblePositionsForBlackPawn.push_back(secondPossibleTakingPosition);
+//	}
+//
+//	return possiblePositionsForBlackPawn;
+//}
+//
+//vector<string> PieceMoveRules::getKingPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	vector<string> possiblePositionsForKing;
+//
+//	int newRank;
+//	char newFile;
+//
+//	//white king can move one square in any direction as long as friend is not there (and not off of board)
+//	for (int row = -1; row <= 1; ++row)
+//	{
+//		for (int col = -1; col <= 1; ++col)
+//		{
+//			newFile = currentFile + col; //N.B. newFile is a CHARACTER type
+//			newRank = currentRank + row;
+//
+//			//exclude "self-check" (do not list current position in list of possible positions to move to)
+//			if (row == 0 && col == 0)
+//			{
+//				continue;
+//			}
+//
+//			if (isPositionInBounds(newFile, newRank))
+//			{
+//				string possiblePosition = newFile + to_string(newRank);
+//				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//				if (contentsOfPossiblePosition == "") //possible position is free to move to
+//				{
+//					possiblePositionsForKing.push_back(possiblePosition);
+//				}
+//
+//				else if ((contentsOfPossiblePosition.find("white") != string::npos
+//					&&
+//					currentPieceName.find("white") != string::npos)
+//					||
+//					(contentsOfPossiblePosition.find("black") != string::npos
+//						&&
+//						currentPieceName.find("black") != string::npos)) //friend is already there
+//				{
+//					//do not add to list of possible positions yet - 
+//					//not handling "castling" just yet 
+//					if (contentsOfPossiblePosition.find("rook"))
+//					{
+//						//...need to check for clear spaces between that rook and the king ...
+//					}
+//				}
+//
+//				else //must be opponent ("black" 
+//				{
+//					displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//					//ChessGame::canTakeOpponentPiece = true; //not sure what to do with this yet 
+//					possiblePositionsForKing.push_back(possiblePosition);
+//				}
+//			}
+//		}
+//	}
+//
+//	return possiblePositionsForKing;
+//
+//}
+
+//vector<string> PieceMoveRules::getKnightPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	vector<string> possiblePositionsForKnight;
+//	int newRank;
+//	char newFile; //potentially need to cast to a char later, but vector below perhaps suggest using int for now...
+//
+//	vector<pair<int, int>> listOfDeltaRanksAndFilesForKnight =
+//	{
+//		{+1, +2}, //up 1 rank, right 2 files 
+//		{+1, -2}, //up 1, left 2
+//		{+2, +1}, //up 2, right 1 
+//		{+2, -1}, //up 2, left 1 
+//
+//		{-1, +2}, //now the "downie equivalents" 
+//		{-1, -2},
+//		{-2, +1},
+//		{-2, -1},
+//	};
+//
+//	for (const auto& currentPair : listOfDeltaRanksAndFilesForKnight)
+//	{
+//		newRank = currentRank + currentPair.first;
+//		newFile = currentFile + currentPair.second;
+//
+//		if (!isPositionInBounds(newFile, newRank))
+//		{
+//			continue; //move on to the next pair if out of bounds 
+//		}
+//
+//		string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//		string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//		string relationship = getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//		if (relationship == "Neutral" || relationship == "Foe")
+//		{
+//			possiblePositionsForKnight.push_back(possiblePosition);
+//
+//			if (relationship == "Foe")
+//			{
+//				displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//			}
+//		}
+//		//else do nothing
+//	}
+//
+//	return possiblePositionsForKnight;
+//}
+
+//vector<string>PieceMoveRules::getRookPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//
+//	vector<string> possiblePositionsForRook;
+//
+//	vector<string> upMoves = lookForVerticalMoves(currentRank, currentFile, currentPieceName, true);
+//	vector<string> downMoves = lookForVerticalMoves(currentRank, currentFile, currentPieceName, false);
+//
+//	possiblePositionsForRook.insert(possiblePositionsForRook.end(), upMoves.begin(), upMoves.end());
+//	possiblePositionsForRook.insert(possiblePositionsForRook.end(), downMoves.begin(), downMoves.end());
+//
+//	vector<string> rightMoves = lookForHorizontalMoves(currentRank, currentFile, currentPieceName, true); 
+//	vector<string> leftMoves = lookForHorizontalMoves(currentRank, currentFile, currentPieceName, false);
+//
+//	possiblePositionsForRook.insert(possiblePositionsForRook.end(), rightMoves.begin(), rightMoves.end()); 
+//	possiblePositionsForRook.insert(possiblePositionsForRook.end(), leftMoves.begin(), leftMoves.end()); 
+//
+//	return possiblePositionsForRook;
+//}
+//
+//vector<string> PieceMoveRules::getBishopPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	vector<string> possiblePositionsForBishop = 
+//		lookForDiagonalMoves(currentRank, currentFile, currentPieceName);
+//
+//
+//	return possiblePositionsForBishop;
+//}
+//
+//vector<string> PieceMoveRules::getQueenPossiblePositions(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	vector<string> upMoves = lookForVerticalMoves(currentRank, currentFile, currentPieceName, true);
+//	vector<string> downMoves = lookForVerticalMoves(currentRank, currentFile, currentPieceName, false);
+//
+//	vector<string> rightMoves = lookForHorizontalMoves(currentRank, currentFile, currentPieceName, true);
+//	vector<string> leftMoves = lookForHorizontalMoves(currentRank, currentFile, currentPieceName, false);
+//
+//	vector<string> diagonalMoves = lookForDiagonalMoves(currentRank, currentFile, currentPieceName);
+//
+//	vector<string> possiblePositionsForQueen; 
+//
+//	possiblePositionsForQueen.insert(possiblePositionsForQueen.end(), upMoves.begin(), upMoves.end());
+//	possiblePositionsForQueen.insert(possiblePositionsForQueen.end(), downMoves.begin(), downMoves.end());
+//	possiblePositionsForQueen.insert(possiblePositionsForQueen.end(), rightMoves.begin(), rightMoves.end()); 
+//	possiblePositionsForQueen.insert(possiblePositionsForQueen.end(), leftMoves.begin(), leftMoves.end()); 
+//	possiblePositionsForQueen.insert(possiblePositionsForQueen.end(), diagonalMoves.begin(), diagonalMoves.end()); 
+//	
+//	//= upMoves + downMoves + rightMoves + leftMoves + diagonalMoves; //not a supported operator for std::vector
+//
+//	return possiblePositionsForQueen; 
+//
+//}
+//
+//vector<string> PieceMoveRules::lookForDiagonalMoves(int currentRank, char currentFile, const string& currentPieceName)
+//{
+//	char newFile = currentFile;
+//	int newRank = currentRank; 
+//
+//	vector<string> diagonalMoves; 
+//
+//	//diagonal move possiblilities are: 
+//	//1) up N squares, right N squares 
+//	//2) up N squares, left N squares 
+//	//3) down N, right N 
+//	//4) down and left N squares each 
+//
+//	vector<pair<int, int>> diagonalTypeMultipliers =
+//	{
+//		{1, 1}, //up and right (deltaRank and deltaFile multiplied by +1
+//		{1, -1},  //up and left (deltaRank multiplied by +1, deltaFile by -1)
+//		{-1, 1}, //down and right 
+//		{-1, -1} //down and left 
+//	};
+//
+//	bool stopLookingAlongThatDiagonal; 
+//
+//	for (const auto& currentPair : diagonalTypeMultipliers)
+//	{
+//		stopLookingAlongThatDiagonal = false; 
+//
+//		for (int deltaRank = 1; deltaRank < 8; ++deltaRank)
+//		{
+//			if (stopLookingAlongThatDiagonal)
+//			{
+//				break; //breaks to outermost loop - in which diagonalTypeMultiplier is updated
+//			}
+//			for (int deltaFile = 1; deltaFile < 8; ++deltaFile)
+//			{
+//				if (stopLookingAlongThatDiagonal)
+//				{
+//					break; //breaks to middlemost loop
+//				}
+//
+//				if (deltaRank == deltaFile)
+//				{
+//
+//
+//					newFile = currentFile + deltaFile * currentPair.second;
+//					newRank = currentRank + deltaRank * currentPair.first;
+//
+//					if (isPositionInBounds(newFile, newRank))
+//					{
+//						string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//						string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//						string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//						if (relationship == "Neutral" || relationship == "Foe")
+//						{
+//							diagonalMoves.push_back(possiblePosition);
+//							if (relationship == "Foe")
+//							{
+//								displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//								//set flag to stop looking further along "that" diagonal 
+//								stopLookingAlongThatDiagonal = true;
+//							}
+//						}
+//
+//						else //relationship is Friend
+//						{
+//							stopLookingAlongThatDiagonal = true; 
+//						}
+//					}
+//
+//					else //if we've gone out of bounds, no reason to continue further 
+//					{
+//						stopLookingAlongThatDiagonal = true;
+//					}
+//				}
+//			}
+//		}
+//	}
+//	return diagonalMoves; 
+//}
+//
+//vector<string> PieceMoveRules::lookForVerticalMoves(int currentRank, char currentFile, const string& currentPieceName, 
+//	bool isUp)
+//{
+//
+//	vector<string> possibleVerticalMoves; 
+//
+//	if (isUp)
+//	{
+//		int newRank = currentRank;
+//		char newFile = currentFile;
+//
+//		//first look for positions upwards: 
+//		bool isUpMoveAvailable = true;
+//
+//		for (int i = 1; i < 9; ++i)
+//		{
+//			if (isUpMoveAvailable == false)
+//			{
+//				break;
+//			}
+//			newRank = currentRank + 1 * i; //NOTE the multiplication by loop counter 
+//
+//			if (isPositionInBounds(newFile, newRank))
+//			{
+//				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//				size_t previousNumberOfPossibilities = possibleVerticalMoves.size();
+//				if (relationship == "Neutral" || relationship == "Foe")
+//				{
+//					possibleVerticalMoves.push_back(possiblePosition);
+//
+//					if (relationship == "Foe")
+//					{
+//						displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition); 
+//
+//						//can't move any farther beyond foe piece, so set flag = false to stop looking: 
+//						isUpMoveAvailable = false; 
+//
+//					}
+//				}
+//
+//				//no need to consider castling since this is vertical moving (castling is horizontal) 
+//
+//				if (possibleVerticalMoves.size() != previousNumberOfPossibilities + 1) //ex: A1 rook and A2 pawn is still at A2 - no up moves possible
+//				{
+//					isUpMoveAvailable = false; //waste no more loop iterations looking 
+//				}
+//			}
+//		}
+//	}
+//
+//	else
+//	{
+//		int newRank = currentRank;
+//		char newFile = currentFile;
+//
+//		bool isDownMoveAvailable = true;
+//		for (int i = 1; i < 9; ++i)
+//		{
+//			if (isDownMoveAvailable == false)
+//			{
+//				break;
+//			}
+//			newRank = currentRank - 1 * i; //NOTE the negative 1
+//
+//			if (isPositionInBounds(newFile, newRank))
+//			{
+//				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//				size_t previousNumberOfPossibilities = possibleVerticalMoves.size();
+//				if (relationship == "Neutral" || relationship == "Foe")
+//				{
+//					possibleVerticalMoves.push_back(possiblePosition);
+//
+//					if (relationship == "Foe")
+//					{
+//						displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//						//can't move any farther beyond foe piece, so set flag = false to stop looking: 
+//						isDownMoveAvailable = false;
+//					}
+//				}
+//
+//				if (possibleVerticalMoves.size() != previousNumberOfPossibilities + 1) //ex: A1 rook and A2 pawn is still at A2 - no up moves possible
+//				{
+//					isDownMoveAvailable = false; //waste no more loop iterations looking 
+//				}
+//			}
+//		}
+//	}
+//
+//	return possibleVerticalMoves; 
+//}
+//
+//vector<string> PieceMoveRules::lookForHorizontalMoves(int currentRank, char currentFile, const string& currentPieceName, bool isRight)
+//
+//{
+//	vector<string> possibleHorizontalMoves;
+//
+//	if (isRight)
+//	{
+//		int newFile = currentFile;
+//		char newRank = currentRank;
+//
+//		//first look for positions upwards: 
+//		bool isRightMoveAvailable = true;
+//
+//		for (int i = 1; i < 9; ++i)
+//		{
+//			if (isRightMoveAvailable == false)
+//			{
+//				break;
+//			}
+//			newFile = currentFile + 1 * i; //NOTE the multiplication by loop counter 
+//
+//			if (isPositionInBounds(newFile, newRank))
+//			{
+//				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//				size_t previousNumberOfPossibilities = possibleHorizontalMoves.size();
+//				if (relationship == "Neutral" || relationship == "Foe")
+//				{
+//					possibleHorizontalMoves.push_back(possiblePosition);
+//
+//					if (relationship == "Foe")
+//					{
+//						displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//						//can't move any farther beyond foe piece, so set flag = false to stop looking: 
+//						isRightMoveAvailable = false;
+//					}
+//				}
+//
+//				//handle castling: 
+//				else //relationship == "Friend"
+//				{
+//					if (contentsOfPossiblePosition.find("King") != string::npos)
+//					{
+//						//check if spaces between the rook and king are empty
+//
+//						//nested if - check if rook and king movecount == 0
+//
+//						//if so, add king's position to possible position for rook 
+//						//AND add rook's position for king 
+//						
+//					}
+//				}
+//
+//				
+//				if (possibleHorizontalMoves.size() != previousNumberOfPossibilities + 1)
+//					//ex: A1 rook and B2 knight is still at B2 - no right moves possible
+//				{
+//					isRightMoveAvailable = false; //waste no more loop iterations looking 
+//				}
+//			}
+//		}
+//	}
+//
+//	else
+//	{
+//		int newRank = currentRank;
+//		char newFile = currentFile;
+//
+//		bool isLeftMoveAvailable = true;
+//		for (int i = 1; i < 9; ++i)
+//		{
+//			if (isLeftMoveAvailable == false)
+//			{
+//				break;
+//			}
+//			newFile = currentFile - 1 * i; //NOTE the negative 1
+//
+//			if (isPositionInBounds(newFile, newRank))
+//			{
+//				string possiblePosition = convertCharAndIntChessPositionToString(newFile, newRank);
+//
+//				string contentsOfPossiblePosition = ChessGame::getPieceAtPosition(possiblePosition);
+//
+//				string relationship = ChessGame::getPieceRelationship(currentPieceName, contentsOfPossiblePosition);
+//
+//				size_t previousNumberOfPossibilities = possibleHorizontalMoves.size();
+//				if (relationship == "Neutral" || relationship == "Foe")
+//				{
+//					possibleHorizontalMoves.push_back(possiblePosition);
+//
+//					if (relationship == "Foe")
+//					{
+//						displayThatAPieceCanBeTaken(currentPieceName, contentsOfPossiblePosition);
+//						//can't move any farther beyond foe piece, so set flag = false to stop looking: 
+//						isLeftMoveAvailable = false;
+//					}
+//				}
+//
+//				//handle castling: 
+//				else //relationship == "Friend"
+//				{
+//					if (contentsOfPossiblePosition.find("King") != string::npos)
+//					{
+//						//check if spaces between the rook and king are empty
+//
+//						//nested if - check if rook and king movecount == 0
+//
+//						//if so, add king's position to possible position for rook 
+//						//AND add rook's position for king 
+//
+//					}
+//				}
+//
+//
+//				if (possibleHorizontalMoves.size() != previousNumberOfPossibilities + 1) 
+//				{
+//					isLeftMoveAvailable = false; //waste no more loop iterations looking 
+//				}
+//			}
+//		}
+//	}
+//
+//	return possibleHorizontalMoves;
+//}
+//
+//
+//vector<string> PieceMoveRules::getPossiblePositionsForCurrentPiece(const string& currentPieceName, const string& currentPosition)
+//{
+//
+//	vector<string> possiblePositionsForCurrentPiece;
+//
+//	int currentRank = (int)(currentPosition.at(1) - 48); //ASCII value for character '0' is 48
+//	char currentFile = currentPosition.at(0);
+//
+//	if (currentPieceName.find("blackPawn") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getBlackPawnPossiblePositions(currentRank, currentFile, currentPieceName);
+//
+//	}
+//
+//	else if (currentPieceName.find("whitePawn") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getWhitePawnMoves(currentRank, currentFile, currentPieceName);
+//
+//	}
+//
+//	//IGNORING placing self in check for now ....
+//	else if (currentPieceName.find("King") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getKingPossiblePositions(currentRank, currentFile, currentPieceName);
+//
+//	}
+//
+//	else if (currentPieceName.find("Knight") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getKnightPossiblePositions(currentRank, currentFile, currentPieceName);
+//
+//	}
+//
+//	else if (currentPieceName.find("Rook") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getRookPossiblePositions(currentRank, currentFile, currentPieceName);
+//	}
+//	
+//	else if (currentPieceName.find("Bishop") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getBishopPossiblePositions(currentRank, currentFile, currentPieceName); 
+//	}
+//
+//	else if (currentPieceName.find("Queen") != string::npos)
+//	{
+//		possiblePositionsForCurrentPiece =
+//			getQueenPossiblePositions(currentRank, currentFile, currentPieceName);
+//	}
+//
+//	else
+//	{
+//		cout << "What piece is that? \n";
+//		__debugbreak(); 
+//	}
+//
+//	return possiblePositionsForCurrentPiece;
+//}
+//
+//PieceMoveRules::PieceMoveRules()
+//{
+//	//no member vars and methods are static - does this default constructor even need to exist? 
+//}
+
+
+#pragma endregion
 //void ChessGame::eraseMovesThatPutSelfInCheck(const string& pieceColor)
 //{
 //    //loop over all pieces of the appropriate color: 

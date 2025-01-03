@@ -1,6 +1,6 @@
 #include"ChessImageBMP.h"
 
-vector<string> ChessImageBMP::pieces;// = ChessImageBMP::mapPiecesToImages_andReturnPieces();// ? (make static ? )
+//vector<string> ChessImageBMP::pieces;// = ChessImageBMP::mapPiecesToImages_andReturnPieces();// ? (make static ? )
 //map<string, ImageBMP> ChessImageBMP::piecesToImages;
 
 ChessImageBMP::ChessImageBMP()

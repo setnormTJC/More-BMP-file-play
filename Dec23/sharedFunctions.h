@@ -62,6 +62,8 @@ bool isPositionInBounds(char file, int rank);
 /*Ex: 3 pts for bishop and knight, 1 for pawn, etc.*/
 size_t findPieceValue(string fullPieceName);
 
+/*Returns Neutral, Friend, or Foe*/
+string getPieceRelationship(const string& currentPiece, const string& contentsOfNewPosition);
 
 
 
