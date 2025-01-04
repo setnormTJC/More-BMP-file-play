@@ -86,6 +86,7 @@ int main()
 
 		auto theTwoChosenPositions = theGame.getAndConfirmMove(); 
 
+		
 
 
 		theGame.movePiece(theTwoChosenPositions.at(0).first,
