@@ -9,6 +9,7 @@
 
 #include"NodeJSFunctions.h"
 
+#include<random> //for goofiness 
 
 class ChessGame
 {
@@ -54,9 +55,15 @@ private: //member variables  (also private)
 
 	map<string, string> positionsToPieces;
 
+
 	/*ex: "whitePawnE2" will be mapped to {E3, E4} initially*/
 	map <string, vector<string>> piecesToMoves;
 	
+	std::random_device device{};
+	std::mt19937 engine{ device() };
+
+
+
 public:
 	/************************public member functions ***********************************/
 	ChessGame();
@@ -73,6 +80,9 @@ public:
 	bool isGameOver();
 
 	bool checkForMate(const string& colorToCheckForMate);
+
+	array<pair<char, int>, 2> getRandomMove(); 
+
 
 public:
 	/************************public member VARIABLES ***********************************/

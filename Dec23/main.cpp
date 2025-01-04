@@ -5,6 +5,8 @@
 #include "NodeJSFunctions.h"
 #include"AlgebraicMoveNotation.h"
 
+#include<random> 
+
 /*"Too much" means > 100 MB*/
 void soundAlertIfImagesTakingUpTooMuchSpace()
 {
@@ -60,34 +62,37 @@ int main()
 	//scholar's mate also detected correctly 
 
 
+
+
 	while (!theGame.isGameOver())
 	{
 		callNodeJS();
 		openPort3000_andDisplayChessBoard();
 	
-		string response; 
-		displayOptions(); 
-		getline(std::cin, response); 
+		//string response; 
+		//displayOptions(); 
+		//getline(std::cin, response); 
 
-		while (response != "1")
-		{
-			if (response == "2")
-			{
-				theGame.showAllPossibleMoves();
-			}
+		//while (response != "1")
+		//{
+		//	if (response == "2")
+		//	{
+		//		theGame.showAllPossibleMoves();
+		//	}
 
-			else
-			{
-				cout << "Unsupported option - enter 1 or 2 (for now)\n";
-			}
-			displayOptions(); 
-			getline(std::cin, response); 
-		}
+		//	else
+		//	{
+		//		cout << "Unsupported option - enter 1 or 2 (for now)\n";
+		//	}
+		//	displayOptions(); 
+		//	getline(std::cin, response); 
+		//}
 
-		auto theTwoChosenPositions = theGame.getAndConfirmMove(); 
+		//auto theTwoChosenPositions = theGame.getAndConfirmMove(); 
 
+		/*make RANDOM moves for fun until checkmate*/
+		array<pair<char, int>, 2> theTwoChosenPositions = theGame.getRandomMove(); 
 		
-
 
 		theGame.movePiece(theTwoChosenPositions.at(0).first,
 			theTwoChosenPositions.at(0).second,
@@ -118,6 +123,8 @@ int main()
 
 		soundAlertIfImagesTakingUpTooMuchSpace();
 
+
+		std::this_thread::sleep_for(std::chrono::seconds(1)); //sleep is for random move dealy 
 	}
 
 	cout << "\n\n\nGame over!";

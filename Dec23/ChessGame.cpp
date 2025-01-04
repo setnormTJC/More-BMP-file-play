@@ -226,6 +226,86 @@ bool ChessGame::checkForMate(const string& colorToCheckForMate)
 	return isCheckMATE;
 }
 
+array<pair<char, int>, 2> ChessGame::getRandomMove()
+{
+	array<pair<char, int>, 2> randomMove;
+
+	std::uniform_int_distribution<int> distribution{ 0, (int)boardImage.pieces.size() - 1 };
+
+	string startingPosition;
+	string endingPosition;
+	string piece;
+
+	// Random move for white:
+	if (moveCount % 2 == 0)
+	{
+		while (true)
+		{
+			int randomIndex = distribution(engine);
+
+			// Choose a random white piece
+			piece = boardImage.pieces.at(randomIndex);
+
+			if (piece.find("white") == string::npos)
+			{
+				continue;
+			}
+
+			startingPosition = boardImage.piecesToPositions.at(piece);
+
+			// Check if the piece has any valid moves
+			if (piecesToMoves.at(piece).empty())
+			{
+				continue;
+			}
+
+			// Choose a random valid move for the piece
+			std::uniform_int_distribution<int> moveDistribution{ 0, (int)piecesToMoves.at(piece).size() - 1 };
+			endingPosition = piecesToMoves.at(piece).at(moveDistribution(engine));
+			break;
+		}
+	}
+	else // Random move for black:
+	{
+		while (true)
+		{
+			int randomIndex = distribution(engine);
+
+			// Choose a random black piece
+			piece = boardImage.pieces.at(randomIndex);
+
+			if (piece.find("black") == string::npos)
+			{
+				continue;
+			}
+
+			startingPosition = boardImage.piecesToPositions.at(piece);
+
+			// Check if the piece has any valid moves
+			if (piecesToMoves.at(piece).empty())
+			{
+				continue;
+			}
+
+			// Choose a random valid move for the piece
+			std::uniform_int_distribution<int> moveDistribution{ 0, (int)piecesToMoves.at(piece).size() - 1 };
+			endingPosition = piecesToMoves.at(piece).at(moveDistribution(engine));
+			break;
+		}
+	}
+
+	auto start = convertStringChessPositionToCharAndInt(startingPosition);
+	auto end = convertStringChessPositionToCharAndInt(endingPosition);
+
+	randomMove =
+	{
+		start,
+		end
+	};
+
+	return randomMove;
+}
+
 
 bool ChessGame::isPieceOnBoard(const string& pieceName)
 {
