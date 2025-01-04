@@ -134,20 +134,26 @@
     <ClCompile Include="AlgebraicMoveNotation.cpp" />
     <ClCompile Include="ChessGame.cpp" />
     <ClCompile Include="ChessImageBMP.cpp" />
+    <ClCompile Include="DemosOfVariousChessMoves.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ImageBMP.cpp" />
     <ClCompile Include="NodeJSFunctions.cpp" />
     <ClCompile Include="sharedFunctions.cpp" />
+    <ClCompile Include="TicTacToe.cpp" />
+    <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlgebraicMoveNotation.h" />
     <ClInclude Include="ChessGame.h" />
     <ClInclude Include="ChessImageBMP.h" />
+    <ClInclude Include="DemosOfVariousChessMoves.h" />
     <ClInclude Include="ImageBMP.h" />
     <ClInclude Include="NodeJSFunctions.h" />
     <ClInclude Include="scrappedFunctions.h" />
     <ClInclude Include="sharedFunctions.h" />
     <ClInclude Include="someImageBMPTestingFunctions.h" />
+    <ClInclude Include="TicTacToe.h" />
+    <ClInclude Include="Tree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

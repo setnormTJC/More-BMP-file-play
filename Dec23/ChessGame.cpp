@@ -87,56 +87,56 @@ array<pair<char, int>, 2> ChessGame::getAndConfirmMove()
 	cout << firstPosition.first << firstPosition.second << "->"
 		<< secondPosition.first << secondPosition.second << "\n";
 
-	string response;
-	while (true) {
-		cout << "Do you accept these as your inputs (y/n)? \n";
-		std::getline(std::cin, response);
-		
-		if (response.length() > 1) //a safety measure in case I accidentally enter "yes" 
-		{
-			setTerminalColor(TerminalColor::Red); 
-			cout << "Careful - enter one letter response - y or n\n";
-			continue; 
-		}
+	//string response;
+	//while (true) {
+	//	cout << "Do you accept these as your inputs (y/n)? \n";
+	//	std::getline(std::cin, response);
+	//	
+	//	if (response.length() > 1) //a safety measure in case I accidentally enter "yes" 
+	//	{
+	//		setTerminalColor(TerminalColor::Red); 
+	//		cout << "Careful - enter one letter response - y or n\n";
+	//		continue; 
+	//	}
 
-		if (response != "y") {
-			cout << "How many seconds would you like this program to wait while you select the piece"
-				<< " and its new position? \n";
-			int seconds;
-			std::cin >> seconds;
+	//	if (response != "y") {
+	//		cout << "How many seconds would you like this program to wait while you select the piece"
+	//			<< " and its new position? \n";
+	//		int seconds;
+	//		std::cin >> seconds;
 
-			callNodeJS(); 
-			openPort3000_andDisplayChessBoard(); 
+	//		callNodeJS(); 
+	//		openPort3000_andDisplayChessBoard(); 
 
-			for (int i = 0; i < seconds; ++i)
-			{
-				cout << seconds - i << "...";
-				std::this_thread::sleep_for(std::chrono::seconds{ 1});
-			}
+	//		for (int i = 0; i < seconds; ++i)
+	//		{
+	//			cout << seconds - i << "...";
+	//			std::this_thread::sleep_for(std::chrono::seconds{ 1});
+	//		}
 
-			// Clear the input buffer
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	//		// Clear the input buffer
+	//		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-			// Re-read the coordinates
-			theTwoCoordinates = readFileAndReturnCoordinatesClickedInBrowser();
+	//		// Re-read the coordinates
+	//		theTwoCoordinates = readFileAndReturnCoordinatesClickedInBrowser();
 
-			x0 = theTwoCoordinates.at(0).first;
-			y0 = theTwoCoordinates.at(0).second;
+	//		x0 = theTwoCoordinates.at(0).first;
+	//		y0 = theTwoCoordinates.at(0).second;
 
-			firstPosition = boardImage.convertImageCoordinatesToPosition(x0, y0);
+	//		firstPosition = boardImage.convertImageCoordinatesToPosition(x0, y0);
 
-			xf = theTwoCoordinates.at(1).first;
-			yf = theTwoCoordinates.at(1).second;
+	//		xf = theTwoCoordinates.at(1).first;
+	//		yf = theTwoCoordinates.at(1).second;
 
-			secondPosition = boardImage.convertImageCoordinatesToPosition(xf, yf);
+	//		secondPosition = boardImage.convertImageCoordinatesToPosition(xf, yf);
 
-			cout << firstPosition.first << firstPosition.second << "->"
-				<< secondPosition.first << secondPosition.second << "\n";
-		}
-		else {
-			break;
-		}
-	}
+	//		cout << firstPosition.first << firstPosition.second << "->"
+	//			<< secondPosition.first << secondPosition.second << "\n";
+	//	}
+	//	else {
+	//		break;
+	//	}
+	//}
 
 	cout << "Updating the board...\n";
 	array<pair<char, int>, 2> theTwoChosenPositions =
