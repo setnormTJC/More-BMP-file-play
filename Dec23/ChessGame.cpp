@@ -178,6 +178,54 @@ bool ChessGame::isGameOver()
 	return false;
 }
 
+bool ChessGame::checkForMate(const string& colorToCheckForMate)
+{
+	//check for checkMATE: 
+	bool isCheckMATE = true;
+
+	//make a COPY? of piecesToMoves having only colorToCheckForChefor now? 
+	map<string, vector<string>> colorPiecesToMoves; 
+	for (const auto& currentPair : piecesToMoves)
+	{
+		if (currentPair.first.find(colorToCheckForMate) != string::npos)
+		{
+			colorPiecesToMoves.insert({currentPair.first, currentPair.second});
+		}
+	}
+
+	for (const auto& singlePieceToMoves : colorPiecesToMoves)
+	//for (int i = 0; i < piecesToMoves.size(); ++i)
+	{
+		if (isCheckMATE == false)
+		{
+			break;
+		}
+
+		const string& piece = singlePieceToMoves.first;
+		//if (piece.find(colorToCheckForMate) != string::npos) 
+		////obviously, do not check if an OPPONENT can move in such a way that the mate is REMOVED :) 
+		//{
+		for (const string& move : singlePieceToMoves.second)
+		{
+			movePieceHelper(piece, move);
+
+			if (isKingInCheck == false)
+			{
+				isCheckMATE = false;
+				break;
+			}
+		}
+		//}
+	}
+
+	if (isCheckMATE)
+	{
+		cout << "\n\n\nCheck MATE!\n\n\n";
+	}
+
+	return isCheckMATE;
+}
+
 
 bool ChessGame::isPieceOnBoard(const string& pieceName)
 {
@@ -228,7 +276,21 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		
 		if (pieceTaken)
 		{
-			positionsToPieces.insert({ oldPosition, takenPieceName });
+			/************************************************/
+			positionsToPieces.insert({ newPosition, takenPieceName }); //REPLACE!
+			//replace oldPosition with newPosition here!!!!!
+
+
+
+
+
+
+
+
+			/************************************************/
+
+
+
 			boardImage.pieces.push_back(takenPieceName); 
 		}
 
@@ -237,34 +299,32 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		piecesToMoves.clear(); 
 		getPiecesToMoves(); 
 
-
-		//remove illegal moves that cause a check: 
-
-		//for (auto& pieceMoves : piecesToMoves)
-		//{
-		//	auto& moves = pieceMoves.second;
-		//	moves.erase(
-		//		std::remove_if(
-		//			moves.begin(),
-		//			moves.end(),
-		//			[&](const string& move) {
-		//				return checkForCheck(getPieceColor(pieceMoves.first));
-		//			}),
-		//		moves.end());
-		//}
-
 		cout << pieceName << " cannot move to " << newPosition << " because\n";
 
 		cout << "AFTER updating, " << getPieceColor(pieceName) << " is in check!\n";
 		cout << "- try another move!\n";
 
-		auto iteratorToNewPosition = std::find(
-			piecesToMoves.at(pieceName).begin(), piecesToMoves.at(pieceName).end(), newPosition); 
 
-		piecesToMoves.at(pieceName).erase(iteratorToNewPosition); 
+		/*The two lines of code directly below are only a "one-time erasure" of the move from piecesToMoves!
+		This obviously needs to be improved later ...
+		*/
+		//auto iteratorToNewPosition = std::find(
+		//	piecesToMoves.at(pieceName).begin(), piecesToMoves.at(pieceName).end(), newPosition); 
+
+		//piecesToMoves.at(pieceName).erase(iteratorToNewPosition); 
+
+
+		isKingInCheck = true; 
+
+
 
 
 		return; //so moveCount will not increment and new board will not be drawn 
+	}
+
+	else
+	{
+		isKingInCheck = false; 
 	}
 
 	moveCount++;
@@ -438,11 +498,11 @@ void ChessGame::movePiece
 			return;
 		}
 
-		cout << "\nFIRST, a SIMULATION of the move..\n";
-		simulateMove(pieceName, newPosition, true, false);
-		cout << "\nEND of simulation ...\n";
+		//cout << "\nFIRST, a SIMULATION of the move..\n";
+		//simulateMove(pieceName, newPosition, true, false);
+		//cout << "\nEND of simulation ...\n";
 
-		movePieceHelper(pieceName, newPosition); //NOTE that this is not a recursive call ...
+		movePieceHelper(pieceName, newPosition); 
 	}
 
 	else
@@ -457,6 +517,8 @@ void ChessGame::getPiecesToMoves()
 {
 	piecesToMoves.clear(); //
 
+
+	assert(boardImage.pieces.size() == boardImage.piecesToPositions.size());
 
 	for (const auto& piece : boardImage.pieces)
 	{

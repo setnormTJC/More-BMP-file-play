@@ -56,18 +56,7 @@ private: //member variables  (also private)
 
 	/*ex: "whitePawnE2" will be mapped to {E3, E4} initially*/
 	map <string, vector<string>> piecesToMoves;
-
-	/*antipcated way of calling this function -
-	ex: at END of getWhitePawnMoves, just before returning whitePawnMoves:
-
-	loop through whitePawnMoves
-	if is_check(move),
-
-	then remove from the list of whitePawnMoves
-
-	*/
-	bool is_check(const string& move);
-
+	
 public:
 	/************************public member functions ***********************************/
 	ChessGame();
@@ -82,6 +71,9 @@ public:
 	void movePiece(const char oldFile, const int oldRank, const char newFile, const int newRank);
 
 	bool isGameOver();
+
+	bool checkForMate(const string& colorToCheckForMate);
+
 public:
 	/************************public member VARIABLES ***********************************/
 	/*Ex: pawns are worth 1, knights and bishops worth 3, rooks worth 5, etc*/
@@ -92,6 +84,9 @@ public:
 	size_t moveCount; // initialized to 0 in ChessGame.cpp at top of file
 
 	ChessImageBMP boardImage;
+	
+	bool isKingInCheck = false; 
+
 
 	friend class AbstractMoveRules;
 };

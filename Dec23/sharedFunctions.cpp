@@ -284,7 +284,7 @@ void setTerminalColor(TerminalColor color)
 
 void displayThatAPieceCanBeTaken(const string& currentPiece, const string& pieceThatCanBeTaken)
 {
-	setTerminalColor(TerminalColor::Magenta);
-	cout << currentPiece << " can take " << pieceThatCanBeTaken << "\n";
-	setTerminalColor(TerminalColor::Default);
+	//setTerminalColor(TerminalColor::Magenta);
+	//cout << currentPiece << " can take " << pieceThatCanBeTaken << "\n";
+	//setTerminalColor(TerminalColor::Default);
 }

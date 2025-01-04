@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AlgebraicMoveNotation.cpp" />
     <ClCompile Include="ChessGame.cpp" />
     <ClCompile Include="ChessImageBMP.cpp" />
     <ClCompile Include="main.cpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="sharedFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AlgebraicMoveNotation.h" />
     <ClInclude Include="ChessGame.h" />
     <ClInclude Include="ChessImageBMP.h" />
     <ClInclude Include="ImageBMP.h" />
