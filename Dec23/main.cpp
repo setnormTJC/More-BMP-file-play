@@ -8,6 +8,7 @@
 #include "TicTacToe.h"
 #include"Tree.h"
 
+#include"playingAroundWithTicTacToeGameTree.h"
 
 /*"Too much" means > 100 MB*/
 void soundAlertIfImagesTakingUpTooMuchSpace()
@@ -119,20 +120,16 @@ void playChessReadingPGNFile(ChessGame& theGame, const string& filename)
 
 int main()
 {
+	//printFirstTwoLevelsOfTicTacToeGameTree(); 
 
 	TicTacToe theGame{};
-	Tree ticTacToeGameTree{ theGame.theBoard };
-	
 
-	ticTacToeGameTree.generatePossibleFirstMoves(theGame.theBoard); 
+	Tree ticTacToeGameTree{ theGame.boardData };
 
+	ticTacToeGameTree.generateMovesRecursively(ticTacToeGameTree.rootNode, theGame.boardData, 0, 3);
 
-	ticTacToeGameTree.BFSPrintTree(); 
+	cout << "Node count for depth 3 tic tac toe tree: " << ticTacToeGameTree.totalNodeCount << "\n";
 
-	
-	ticTacToeGameTree.generatePossibleSecondMoves();
-
-	//for (auto secondLevel : ticTacToeGameTree.rootNode.childrenLinks.at(0))
 
 	std::cin.get(); 
 

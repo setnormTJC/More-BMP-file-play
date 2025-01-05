@@ -30,12 +30,13 @@ public:
 	size_t depth;
 	TicTacToeBoardNode rootNode;
 
+	size_t totalNodeCount;
 
 	Tree(); 
 	Tree(const array<array<char, 3>, 3>& boardData);
 
 
-	void insertNode(const array<array<char, 3>, 3>& boardData, int level);
+	void insertNode(const array<array<char, 3>, 3>& boardData, int level, int childIndex);
 
 	/*breadth first search*/
 	void BFSPrintTree();
@@ -44,6 +45,10 @@ public:
 
 	void generatePossibleSecondMoves();
 	
+	void generatePossibleMoves_toDepthN(array<array<char, 3>, 3>& boardData, size_t N);
+
+	void generateMovesRecursively(TicTacToeBoardNode& parentNode, array<array<char, 3>, 3>& boardData, int currentDepth, int maxDepth);
+
 	void deleteNode(TicTacToeBoardNode* node);
 
 	~Tree(); 

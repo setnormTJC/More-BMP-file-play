@@ -149,6 +149,7 @@
     <ClInclude Include="DemosOfVariousChessMoves.h" />
     <ClInclude Include="ImageBMP.h" />
     <ClInclude Include="NodeJSFunctions.h" />
+    <ClInclude Include="playingAroundWithTicTacToeGameTree.h" />
     <ClInclude Include="scrappedFunctions.h" />
     <ClInclude Include="sharedFunctions.h" />
     <ClInclude Include="someImageBMPTestingFunctions.h" />

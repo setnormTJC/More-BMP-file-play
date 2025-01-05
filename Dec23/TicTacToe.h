@@ -27,9 +27,10 @@ public:
 
 	bool isGameOver(); 
 
+
 	//friend ostream& operator << (ostream& os, const TicTacToe& theGame);
 
-	array<array<char, 3>, 3> theBoard;
+	array<array<char, 3>, 3> boardData;
 
 };
 

@@ -4,9 +4,9 @@ bool TicTacToe::checkForVerticalWin()
 {
 	for (size_t col = 0; col < 3; ++col)
 	{
-		if (theBoard.at(0).at(col) == theBoard.at(1).at(col)
+		if (boardData.at(0).at(col) == boardData.at(1).at(col)
 			&&
-			theBoard.at(1).at(col) == theBoard.at(2).at(col))
+			boardData.at(1).at(col) == boardData.at(2).at(col))
 		{
 			return true;
 		}
@@ -18,9 +18,9 @@ bool TicTacToe::checkForHorizontalWin()
 {
 	for (size_t row = 0; row < 3; ++row)
 	{
-		if (theBoard.at(row).at(0) == theBoard.at(row).at(1)
+		if (boardData.at(row).at(0) == boardData.at(row).at(1)
 			&&
-			theBoard.at(row).at(1) == theBoard.at(row).at(2))
+			boardData.at(row).at(1) == boardData.at(row).at(2))
 		{
 			return true;
 		}
@@ -30,16 +30,16 @@ bool TicTacToe::checkForHorizontalWin()
 
 bool TicTacToe::checkForDiagonalWin()
 {
-	if (theBoard.at(0).at(0) == theBoard.at(1).at(1)
+	if (boardData.at(0).at(0) == boardData.at(1).at(1)
 		&&
-		theBoard.at(1).at(1) == theBoard.at(2).at(2))
+		boardData.at(1).at(1) == boardData.at(2).at(2))
 	{
 		return true;
 	}
 
-	if (theBoard.at(0).at(2) == theBoard.at(1).at(1)
+	if (boardData.at(0).at(2) == boardData.at(1).at(1)
 		&&
-		theBoard.at(1).at(1) == theBoard.at(2).at(0))
+		boardData.at(1).at(1) == boardData.at(2).at(0))
 	{
 		return true;
 	}
@@ -57,7 +57,7 @@ TicTacToe::TicTacToe()
 	{
 		for (size_t col = 0; col < 3; ++col)
 		{
-			TicTacToe::theBoard.at(row).at(col) = 'a' + counter; 
+			TicTacToe::boardData.at(row).at(col) = 'a' + counter; 
 			//make initial board contain a- c, d - f, g - i
 			counter++; 
 		}
@@ -72,7 +72,7 @@ void TicTacToe::printBoard()
 	{
 		for (size_t col = 0; col < 3; ++col)
 		{
-			cout << TicTacToe::theBoard.at(row).at(col); 
+			cout << TicTacToe::boardData.at(row).at(col); 
 		}
 		cout << "\n";
 	}
@@ -82,7 +82,7 @@ void TicTacToe::getMove(const int row, const int col)
 {
 	assert(row < 3 && col < 3);
 
-	if (theBoard.at(row).at(col) == 'X' || theBoard.at(row).at(col) == 'O')
+	if (boardData.at(row).at(col) == 'X' || boardData.at(row).at(col) == 'O')
 	{
 		cout << "Invalid move. Try again.\n";
 		return;
@@ -90,12 +90,12 @@ void TicTacToe::getMove(const int row, const int col)
 
 	if (moveCount % 2 == 0)
 	{
-		theBoard.at(row).at(col) = 'X'; 
+		boardData.at(row).at(col) = 'X'; 
 	}
 
 	else
 	{
-		theBoard.at(row).at(col) = 'O';
+		boardData.at(row).at(col) = 'O';
 	}
 
 	moveCount++; 
@@ -137,7 +137,7 @@ ostream& operator<<(ostream& os, const TicTacToe& theGame)
 	{
 		for (size_t col = 0; col < 3; ++col)
 		{
-			os << theGame.theBoard.at(row).at(col);
+			os << theGame.boardData.at(row).at(col);
 		}
 		os << "\n";
 	}
