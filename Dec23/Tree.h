@@ -5,7 +5,9 @@
 #include<array> 
  
 
-using std::vector, std::cout, std::array, std::ostream; 
+using std::vector, std::cout, std::array, std::ostream, std::pair, std::string; 
+
+
 
 	
 //template<typename T> 
@@ -23,17 +25,18 @@ struct TicTacToeBoardNode
 };
 
 //template<typename T> 
-class Tree
+class TicTacToeTree
 {
 
 public: 
 	size_t depth;
 	TicTacToeBoardNode rootNode;
 
+	size_t numberOfWinsAtMaxDepth = 0;
 	size_t totalNodeCount;
 
-	Tree(); 
-	Tree(const array<array<char, 3>, 3>& boardData);
+	TicTacToeTree(); 
+	TicTacToeTree(const array<array<char, 3>, 3>& boardData);
 
 
 	void insertNode(const array<array<char, 3>, 3>& boardData, int level, int childIndex);
@@ -47,13 +50,26 @@ public:
 	
 	void generatePossibleMoves_toDepthN(array<array<char, 3>, 3>& boardData, size_t N);
 
-	void generateMovesRecursively(TicTacToeBoardNode& parentNode, array<array<char, 3>, 3>& boardData, int currentDepth, int maxDepth);
+	/*Implementation is similar to a DFS algorithm - note that BFS with a queue is also an option (not included here) */
+	void generateGameTreeRecursively(TicTacToeBoardNode& parentNode, array<array<char, 3>, 3>& boardData, int currentDepth, int maxDepth);
+
+	/*the implementation was "hardcoded" by Copilot*/
+	bool checkWinCondition(const array<array<char, 3>, 3>& boardData, char currentPlayer);
+
+	pair<int, int> getBestMove(array<array<char, 3>, 3>& boardData, char currentPlayer);
+	
+	int minimax(array<array<char, 3>, 3>& boardData, int depth, bool isMaximizing);
+
+	int evaluateBoard(const array<array<char, 3>, 3>& boardData);
 
 	void deleteNode(TicTacToeBoardNode* node);
 
-	~Tree(); 
+	~TicTacToeTree(); 
 
 };
+
+
+
 
 /*plan for this to hold tic tac toe boards*/
 //extern template class Tree<std::array<std::array<char, 3>, 3>>;

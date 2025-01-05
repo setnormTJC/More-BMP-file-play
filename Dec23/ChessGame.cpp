@@ -1,30 +1,6 @@
 #include "ChessGame.h"
 
 
-
-//bool ChessGame::is_check(move)
-//{
-//
-//	// 1. Simulate the move on a copy of the board
-//	Board temp_board = board;
-//	temp_board.apply_move(move);
-//
-//	// 2. Locate the king
-//	Position king_pos = temp_board.find_king(move.player);
-//
-//	// 3. & 4. Check if any opponent piece attacks the king
-//	for (const Piece& piece : temp_board.get_opponent_pieces(move.player)) {
-//		if (piece.can_attack(king_pos, temp_board)) {
-//			// 5. Move puts the king in check
-//			return true;
-//		}
-//	}
-//
-//	// 6. Move does not put the king in check
-//	return false;
-//	
-//}
-
 ChessGame::ChessGame()
 {
 	
@@ -39,6 +15,19 @@ ChessGame::ChessGame()
 	string filename = baseFolderOfNodeJS + "chessboard.bmp"; //note that this will overwrite!
 	boardImage.writeImageFile(filename);
 
+}
+
+ChessGame::ChessGame(const ChessGame& other) 
+	: positionsToPieces(other.positionsToPieces),
+	piecesToMoves(other.piecesToMoves),
+	blackScore(other.blackScore),
+	whiteScore(other.whiteScore),
+	moveCount(other.moveCount),
+	isKingInCheck(other.isKingInCheck) 
+{
+	// Copy any other necessary member variables here
+	cout << "Copy constructor for ChessGame called! Beware!\n";
+	std::cin.get(); 
 }
 
 void ChessGame::showAllPossibleMoves()
@@ -87,56 +76,6 @@ array<pair<char, int>, 2> ChessGame::getAndConfirmMove()
 	cout << firstPosition.first << firstPosition.second << "->"
 		<< secondPosition.first << secondPosition.second << "\n";
 
-	//string response;
-	//while (true) {
-	//	cout << "Do you accept these as your inputs (y/n)? \n";
-	//	std::getline(std::cin, response);
-	//	
-	//	if (response.length() > 1) //a safety measure in case I accidentally enter "yes" 
-	//	{
-	//		setTerminalColor(TerminalColor::Red); 
-	//		cout << "Careful - enter one letter response - y or n\n";
-	//		continue; 
-	//	}
-
-	//	if (response != "y") {
-	//		cout << "How many seconds would you like this program to wait while you select the piece"
-	//			<< " and its new position? \n";
-	//		int seconds;
-	//		std::cin >> seconds;
-
-	//		callNodeJS(); 
-	//		openPort3000_andDisplayChessBoard(); 
-
-	//		for (int i = 0; i < seconds; ++i)
-	//		{
-	//			cout << seconds - i << "...";
-	//			std::this_thread::sleep_for(std::chrono::seconds{ 1});
-	//		}
-
-	//		// Clear the input buffer
-	//		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-	//		// Re-read the coordinates
-	//		theTwoCoordinates = readFileAndReturnCoordinatesClickedInBrowser();
-
-	//		x0 = theTwoCoordinates.at(0).first;
-	//		y0 = theTwoCoordinates.at(0).second;
-
-	//		firstPosition = boardImage.convertImageCoordinatesToPosition(x0, y0);
-
-	//		xf = theTwoCoordinates.at(1).first;
-	//		yf = theTwoCoordinates.at(1).second;
-
-	//		secondPosition = boardImage.convertImageCoordinatesToPosition(xf, yf);
-
-	//		cout << firstPosition.first << firstPosition.second << "->"
-	//			<< secondPosition.first << secondPosition.second << "\n";
-	//	}
-	//	else {
-	//		break;
-	//	}
-	//}
 
 	cout << "Updating the board...\n";
 	array<pair<char, int>, 2> theTwoChosenPositions =
@@ -348,6 +287,8 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 	piecesToMoves.clear();
 	getPiecesToMoves();
 	
+	/*Finally, check for check: */
+	/*IF the move puts friendly king in check, REJECT the move (early return) and REPROMPT the user for a move*/
 	if (checkForCheck(getPieceColor(pieceName))) 
 	{
 		//reversion to previous state - disallow move: 
@@ -356,21 +297,7 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		
 		if (pieceTaken)
 		{
-			/************************************************/
-			positionsToPieces.insert({ newPosition, takenPieceName }); //REPLACE!
-			//replace oldPosition with newPosition here!!!!!
-
-
-
-
-
-
-
-
-			/************************************************/
-
-
-
+			positionsToPieces.insert({ newPosition, takenPieceName }); 
 			boardImage.pieces.push_back(takenPieceName); 
 		}
 
@@ -384,20 +311,8 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		cout << "AFTER updating, " << getPieceColor(pieceName) << " is in check!\n";
 		cout << "- try another move!\n";
 
-
-		/*The two lines of code directly below are only a "one-time erasure" of the move from piecesToMoves!
-		This obviously needs to be improved later ...
-		*/
-		//auto iteratorToNewPosition = std::find(
-		//	piecesToMoves.at(pieceName).begin(), piecesToMoves.at(pieceName).end(), newPosition); 
-
-		//piecesToMoves.at(pieceName).erase(iteratorToNewPosition); 
-
-
-		isKingInCheck = true; 
-
-
-
+		isKingInCheck = true; //the MAIN function checks for this flag
+							//if it is set, the `checkForMate` function is called (in main)
 
 		return; //so moveCount will not increment and new board will not be drawn 
 	}
@@ -409,8 +324,15 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 
 	moveCount++;
 
+
+	/*Write the the image file with the updated board*/
 	drawBoardHelper(oldPosition);
 
+	/*Update game tree: */
+	Tree gameTree{ piecesToMoves };
+	int desiredDepth = 2; 
+
+	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator 
 }
 
 void ChessGame::takePiece(const string& pieceName, const string& newPosition)
@@ -460,6 +382,164 @@ void ChessGame::drawBoardHelper(const string& oldPosition)
 	string baseFolderOfNodeJS = "testingNodeJS/public/";
 	string filename = baseFolderOfNodeJS + "chessboard.bmp"; //note that this will overwrite!
 	boardImage.writeImageFile(filename);
+}
+
+void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<string>>& data, 
+	int currentDepth, int maxDepth, int moveCount)
+{
+	if (currentDepth == maxDepth)
+	{
+		return; 
+	}
+
+	string currentPlayer = (moveCount % 2 == 0) ? "white" : "black";
+
+	for (int pieceIndex = 0; pieceIndex < boardImage.pieces.size(); ++pieceIndex)
+	{
+		string piece = boardImage.pieces.at(pieceIndex); 
+		if (piece.find(currentPlayer) == string::npos)
+		{
+			continue; 
+		}
+		//else get all moves available to that piece: 
+		for (int moveIndex = 0; moveIndex < piecesToMoves.at(piece).size(); ++moveIndex)
+		{
+			string newPosition = piecesToMoves.at(piece).at(moveIndex); 
+			
+			/********************************Update board section************************************************/
+			auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
+			positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+
+			string takenPieceName;
+			bool pieceTaken = false;
+
+			//handle taking an opponent piece by deleting from vector<string> pieceNames!
+			if (positionsToPieces.find(newPosition) != positionsToPieces.end())
+			{
+				//opponent must be there (UNLESS castling!) 
+				takenPieceName = positionsToPieces.at(newPosition);
+				takePiece(piece, newPosition);
+				pieceTaken = true;
+			}
+
+			//insert the piece at the new position
+			positionsToPieces.insert({ newPosition, piece });
+
+			//clear piecesToPositions and then get its contents by using the "switch" function: 
+			boardImage.piecesToPositions.clear();
+			boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+
+			//once a piece has moved, possible positions change for ALL pieces, so clear the possible positions map
+			piecesToMoves.clear();
+			getPiecesToMoves();
+
+
+			/****************Insertion of new node into GameTree section***************************************** */ 
+			auto childNode = make_unique<Node>(); 
+			childNode->data = piecesToMoves; 
+
+			parentNode.childrenLinks.push_back(std::move(childNode)); //note the std::move!!
+			gameTreeNodeCount++; 
+
+			//recursive call: 
+			//getGameTreeRecursively(*childNode, piecesToMoves, currentDepth + 1, maxDepth, moveCount + 1); //previous approach w/o smart ptrs
+			getGameTreeRecursively(*parentNode.childrenLinks.back(),
+				piecesToMoves, currentDepth + 1, maxDepth, moveCount + 1);
+
+
+			/***********************BACKTRACK(undo the updates to the board state)**************************/
+			positionsToPieces.erase(newPosition);
+			positionsToPieces.insert({ oldPosition, piece });
+
+			if (pieceTaken)
+			{
+				positionsToPieces.insert({ newPosition, takenPieceName });
+				boardImage.pieces.push_back(takenPieceName);
+			}
+
+			boardImage.piecesToPositions.clear();
+			boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+			piecesToMoves.clear();
+			getPiecesToMoves();
+
+		}
+
+	}
+
+}
+
+int ChessGame::evaluateGameState()
+{
+	//K is number of WHITE kings (only every equal to 0 or 1, but not so for pawns, bishops, etc.)
+	int K = 0;
+	//K_prime is number of BLACK kings 
+	int K_prime = 0;
+	
+	int Q = 0, Q_prime = 0, R = 0, R_prime = 0;
+	int B = 0, B_prime = 0, N = 0, N_prime = 0, P = 0, P_prime = 0;
+	int D = 0, D_prime = 0, S = 0, S_prime = 0, I = 0, I_prime = 0;
+	int M = 0, M_prime = 0;
+	
+	// Count pieces and other factors for both players
+	for (const auto& piece : boardImage.pieces) 
+	{
+		if (piece.find("whiteKing") != string::npos) K++;
+		if (piece.find("blackKing") != string::npos) K_prime++;
+		if (piece.find("whiteQueen") != string::npos) Q++;
+		if (piece.find("blackQueen") != string::npos) Q_prime++;
+		if (piece.find("whiteRook") != string::npos) R++;
+		if (piece.find("blackRook") != string::npos) R_prime++;
+		if (piece.find("whiteBishop") != string::npos) B++;
+		if (piece.find("blackBishop") != string::npos) B_prime++;
+		if (piece.find("whiteKnight") != string::npos) N++;
+		if (piece.find("blackKnight") != string::npos) N_prime++;
+		if (piece.find("whitePawn") != string::npos) P++;
+		if (piece.find("blackPawn") != string::npos) P_prime++;
+	
+	
+		//add doubled and isolated pawns logic if desired ...
+	
+	}
+	
+	
+	int score = 200 * (K - K_prime) + 9 * (Q - Q_prime) + 5 * (R - R_prime) +
+		3 * (B - B_prime + N - N_prime) + (P - P_prime) -
+	
+		/*the rest of these are 0 for now ...*/
+		0.5 * (D - D_prime + S - S_prime + I - I_prime) +
+		0.1 * (M - M_prime);
+	
+	return score;
+}
+
+void ChessGame::updateBoard(const string& piece, const string& newPosition)
+{
+	//update board:
+	auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
+	positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+
+	string takenPieceName;
+	bool pieceTaken = false;
+
+	//handle taking an opponent piece by deleting from vector<string> pieceNames!
+	if (positionsToPieces.find(newPosition) != positionsToPieces.end())
+	{
+		//opponent must be there (UNLESS castling!) 
+		takenPieceName = positionsToPieces.at(newPosition);
+		takePiece(piece, newPosition);
+		pieceTaken = true;
+	}
+
+	//insert the piece at the new position
+	positionsToPieces.insert({ newPosition, piece});
+
+	//clear piecesToPositions and then get its contents by using the "switch" function: 
+	boardImage.piecesToPositions.clear();
+	boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+
+	//once a piece has moved, possible positions change for ALL pieces, so clear the possible positions map
+	piecesToMoves.clear();
+	getPiecesToMoves();
 }
 
 void ChessGame::simulateMove(const string& piece, const string& newPosition, bool determineIfSelfCheck, bool determineIfFork)
@@ -525,14 +605,6 @@ void ChessGame::simulateMove(const string& piece, const string& newPosition, boo
 	getPiecesToMoves(); 
 }
 
-bool ChessGame::checkForFork()
-{
-	//true if a piece can move to two different locations which BOTH have enemies 
-	return false;
-}
-
-
-
 
 void ChessGame::movePiece
 	(const char oldPositionFile, const int oldPositionRank, const char newPositionFile, const int newPositionRank)
@@ -546,7 +618,8 @@ void ChessGame::movePiece
 	{
 		string pieceName = oldPositionIterator->second; 
 
-		system("cls");
+		//system("cls");
+		cout << "\n\n\n";
 
 		if (!isThatColorTurn(pieceName))
 		{
@@ -718,6 +791,55 @@ bool ChessGame::checkForCheck(const string& colorToCheckForCheck)
 
 	return false;
 }
+
+#pragma region Tree
+Node::Node() = default;
+
+
+Tree::Tree()
+	:root(make_unique<Node>())
+{
+
+}
+Tree::Tree(const map <string, vector<string>> & data)
+{
+
+	//root.data = data; //former approach 
+	root = make_unique<Node>(); 
+	root->data = data; 
+
+	depth = 0;
+}
+
+
+//void Tree::deleteNode(Node* node)
+//{
+//	if (node == nullptr)
+//	{
+//		return; 
+//	}
+//
+//
+//	for (auto& child : node->childrenLinks)
+//	{
+//		deleteNode(child);
+//	}
+//
+//	node->childrenLinks.clear(); // Clear the children links to avoid dangling pointers
+//	//comment above is from Copilot 
+//
+//	delete node;
+//}
+
+Tree::~Tree() = default; 
+
+
+
+
+
+#pragma endregion 
+
+#pragma region Abstract Move Rules
 
 vector<string> WhitePawnMoveRules::getMoves(char currentFile, int currentRank, const string& currentPiece, const ChessGame& game)
 {
@@ -1320,3 +1442,5 @@ vector<string> AbstractMoveRules::lookForDiagonalMoves(char file, int rank, cons
 
 }
 
+
+#pragma endregion 

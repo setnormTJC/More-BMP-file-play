@@ -9,7 +9,12 @@
 //
 //}
 
+
+
+
+#pragma region TicTacToe
 TicTacToeBoardNode::TicTacToeBoardNode() = default;
+
 
 ostream& operator<<(ostream& os, const TicTacToeBoardNode& theNode)
 {
@@ -27,17 +32,17 @@ ostream& operator<<(ostream& os, const TicTacToeBoardNode& theNode)
 
 
 
-Tree::Tree() = default;
+TicTacToeTree::TicTacToeTree() = default;
 
-Tree::Tree(const array<array<char, 3>, 3>& boardData)
+TicTacToeTree::TicTacToeTree(const array<array<char, 3>, 3>& boardData)
 {
 	rootNode.boardData = boardData; 
 	depth = 0; 
-	totalNodeCount = 0; 
+	totalNodeCount = 1; 
 	//rootNode.childrenLinks
 }
 
-void Tree::insertNode(const array<array<char, 3>, 3>& boardData, int level, int childIndex)
+void TicTacToeTree::insertNode(const array<array<char, 3>, 3>& boardData, int level, int childIndex)
 {
 	TicTacToeBoardNode* node = new TicTacToeBoardNode;
 
@@ -63,7 +68,7 @@ void Tree::insertNode(const array<array<char, 3>, 3>& boardData, int level, int 
 
 }
 
-void Tree::BFSPrintTree()
+void TicTacToeTree::BFSPrintTree()
 {
 	//start at root: 
 	cout << "ROOT:\n";
@@ -88,7 +93,7 @@ void Tree::BFSPrintTree()
 
 }
 
-void Tree::generatePossibleFirstMoves(array<array<char, 3>, 3>& boardData)
+void TicTacToeTree::generatePossibleFirstMoves(array<array<char, 3>, 3>& boardData)
 {
 	for (size_t row = 0; row < 3; ++row)
 	{
@@ -112,7 +117,7 @@ void Tree::generatePossibleFirstMoves(array<array<char, 3>, 3>& boardData)
 	//BFSPrintTree(); 
 }
 
-void Tree::generatePossibleSecondMoves()
+void TicTacToeTree::generatePossibleSecondMoves()
 {
 	//go one level deep: 
 	//auto startNode = rootNode.childrenLinks.at(0); 
@@ -153,15 +158,158 @@ void Tree::generatePossibleSecondMoves()
 
 }
 
-void Tree::generatePossibleMoves_toDepthN(array<array<char, 3>, 3>& boardData, size_t N)
+
+bool TicTacToeTree::checkWinCondition(const array<array<char, 3>, 3>& boardData, char currentPlayer)
+
 {
-	generateMovesRecursively(rootNode, boardData, 0, N);
+	// Check rows, columns, and diagonals for a win
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if ((boardData[i][0] == currentPlayer && boardData[i][1] == currentPlayer && boardData[i][2] == currentPlayer) ||
+			(boardData[0][i] == currentPlayer && boardData[1][i] == currentPlayer && boardData[2][i] == currentPlayer))
+		{
+			return true;
+		}
+	}
+	if ((boardData[0][0] == currentPlayer && boardData[1][1] == currentPlayer && boardData[2][2] == currentPlayer) ||
+		(boardData[0][2] == currentPlayer && boardData[1][1] == currentPlayer && boardData[2][0] == currentPlayer))
+	{
+		return true;
+	}
+	return false;
 }
 
-void Tree::generateMovesRecursively(TicTacToeBoardNode& parentNode, array<array<char, 3>, 3>& boardData, int currentDepth, int maxDepth)
+pair<int, int> TicTacToeTree::getBestMove(array<array<char, 3>, 3>& boardData, char currentPlayer)
 {
-	if (currentDepth == maxDepth)//base case
+
+	pair<int, int> bestMove; 
+
+	int bestScore = (currentPlayer == 'X') ? INT_MIN : INT_MAX;
+
+	//get possible moves for the given board state (may be partially full) 
+	for (size_t row = 0; row < 3; ++row)
 	{
+		for (size_t col = 0; col < 3; ++col)
+		{
+			if (boardData.at(row).at(col) != 'X' && boardData.at(row).at(col) != 'O')
+				//spot is avaialable 
+			{
+				auto copy = boardData.at(row).at(col); 
+
+				boardData.at(row).at(col) = currentPlayer;
+
+				int score = minimax(boardData, 9, (currentPlayer == 'O'));
+
+				boardData.at(row).at(col) = copy; 
+
+				if ((currentPlayer == 'X' && score > bestScore) || (currentPlayer == 'O' && score < bestScore))
+				{
+					bestScore = score;
+					bestMove = { row, col };
+				}
+			}
+		}
+	}
+
+	return bestMove;
+}
+
+int TicTacToeTree::evaluateBoard(const array<array<char, 3>, 3>& boardData)
+{
+	if (checkWinCondition(boardData, 'X'))
+		return 10;
+
+	else if (checkWinCondition(boardData, 'O'))
+		return -10;
+
+	else //no winner or tie 
+	{
+		return 0;
+	}
+}
+
+int TicTacToeTree::minimax(array<array<char, 3>, 3>& boardData, int depth, bool isMaximizing)
+{
+	int score = evaluateBoard(boardData);
+
+	if (score == 10 || score == -10)
+	{
+		return score;
+	}
+
+	if (depth == 0)
+	{
+		return 0; //all 9 moves made and it was a draw
+	}
+
+	if (isMaximizing)
+	{
+		int best = INT_MIN; 
+
+		for (size_t row = 0; row < 3; ++row)
+		{
+			for (size_t col = 0; col < 3; ++col)
+			{
+				// Check if cell is empty
+				if (boardData.at(row).at(col) != 'X' && boardData.at(row).at(col) != 'O')
+				{
+					// Make the move
+					char copy = boardData.at(row).at(col);
+					boardData.at(row).at(col) = 'X';
+
+					//the recursive call: 
+					best = std::max(best, minimax(boardData, depth - 1, !isMaximizing));
+
+					boardData.at(row).at(col) = copy; 
+
+				}
+			}
+		}
+		return best; 
+	}
+
+	else
+	{
+		int best = INT_MAX; 
+
+		for (size_t row = 0; row < 3; ++row)
+		{
+			for (size_t col = 0; col < 3; ++col)
+			{
+				// Check if cell is empty
+				if (boardData.at(row).at(col) != 'X' && boardData.at(row).at(col) != 'O')
+				{
+					// Make the move
+					char copy = boardData.at(row).at(col);
+					boardData.at(row).at(col) = 'O';
+
+					best = std::min(best, minimax(boardData, depth - 1, !isMaximizing));
+
+					boardData.at(row).at(col) = copy; 
+				}
+			}
+		}
+		
+		return best; 
+	}
+}
+
+void TicTacToeTree::generatePossibleMoves_toDepthN(array<array<char, 3>, 3>& boardData, size_t N)
+{
+	generateGameTreeRecursively(rootNode, boardData, 0, N);
+}
+
+void TicTacToeTree::generateGameTreeRecursively(TicTacToeBoardNode& parentNode, array<array<char, 3>, 3>& boardData, int currentDepth, int maxDepth)
+{
+
+	if (currentDepth == maxDepth  //base case
+		||
+		checkWinCondition(boardData, (currentDepth % 2 == 0) ? 'X' : 'O'))
+	{
+		if (checkWinCondition(boardData, (currentDepth % 2 == 0) ? 'X' : 'O'))
+		{
+			numberOfWinsAtMaxDepth++; 
+		}
 		return; //nothing - because method modifies member vars of class 
 		//so, anticipate that recursive calls will not be returning anything - only modifying member vars 
 	}
@@ -187,7 +335,7 @@ void Tree::generateMovesRecursively(TicTacToeBoardNode& parentNode, array<array<
 				totalNodeCount++; 
 
 				//recursive call on child node - down to maxDepth 
-				generateMovesRecursively(*childNode, boardData, currentDepth + 1, maxDepth);
+				generateGameTreeRecursively(*childNode, boardData, currentDepth + 1, maxDepth);
 
 				boardData.at(row).at(col) = copy; 
 			}
@@ -198,12 +346,13 @@ void Tree::generateMovesRecursively(TicTacToeBoardNode& parentNode, array<array<
 	{
 		depth = maxDepth; 
 	}
-
+	
 }
 
 
 
-void Tree::deleteNode(TicTacToeBoardNode* node)
+
+void TicTacToeTree::deleteNode(TicTacToeBoardNode* node)
 {
 	for (auto child : node->childrenLinks)
 	{
@@ -213,9 +362,11 @@ void Tree::deleteNode(TicTacToeBoardNode* node)
 	}
 }
 
-Tree::~Tree()
+TicTacToeTree::~TicTacToeTree()
 {
 	deleteNode(&rootNode); 
 }
+
+#pragma endregion
 
 

@@ -235,7 +235,7 @@ size_t findPieceValue(string fullPieceName)
 	
 	else if (fullPieceName.find("King") != string::npos)
 	{
-		return 1000; //arbitrary-ish "large value
+		return 200; //arbitrary-ish "large value from Shannon paper 
 	}
 
 	else
