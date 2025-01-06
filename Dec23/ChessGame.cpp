@@ -1,6 +1,8 @@
 #include "ChessGame.h"
 
 
+size_t ChessGame::recursionCounter = 0; 
+
 ChessGame::ChessGame()
 {
 	
@@ -20,14 +22,12 @@ ChessGame::ChessGame()
 ChessGame::ChessGame(const ChessGame& other) 
 	: positionsToPieces(other.positionsToPieces),
 	piecesToMoves(other.piecesToMoves),
-	blackScore(other.blackScore),
-	whiteScore(other.whiteScore),
-	moveCount(other.moveCount),
-	isKingInCheck(other.isKingInCheck) 
+	moveCount(other.moveCount)
 {
 	// Copy any other necessary member variables here
-	cout << "Copy constructor for ChessGame called! Beware!\n";
-	std::cin.get(); 
+
+	//cout << "Copy constructor for ChessGame called! Beware!\n";
+	//std::cin.get(); 
 }
 
 void ChessGame::showAllPossibleMoves()
@@ -56,6 +56,416 @@ void ChessGame::showAllPossibleMoves()
 		}
 	}
 }
+
+pair<string, string> ChessGame::getStrongishMove(int desiredDepth)
+{
+	Tree gameTree{ piecesToMoves };
+
+	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
+	
+	//reset recursion counter 
+	recursionCounter = 0; 
+
+	int bestScore = INT_MIN; // Initialize to a very low value
+	pair<string, string> bestMove;
+
+	for (const auto& child : gameTree.root->childrenLinks)
+	{
+		for (const auto& pieceMoves : child->data)
+		{
+			const string& piece = pieceMoves.first;
+			for (const string& move : pieceMoves.second)
+			{
+				if (isMoveValid(piece, move))
+				{
+					// Save the current state
+					auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
+					string takenPieceName;
+					bool pieceTaken = false;
+
+					// Update the board state
+					positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+					if (positionsToPieces.find(move) != positionsToPieces.end())
+					{
+						// Opponent must be there (UNLESS castling!)
+						takenPieceName = positionsToPieces.at(move);
+						takePiece(piece, move);
+						pieceTaken = true;
+					}
+					positionsToPieces.insert({ move, piece });
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+
+					// Evaluate the board state after the move
+					int score = evaluateGameState();
+
+					// If the score is better than the best score, update the best score and best move
+					if (score > bestScore)
+					{
+						bestScore = score;
+						bestMove = { piece, move };
+					}
+
+					// Revert the board state
+					positionsToPieces.erase(move);
+					positionsToPieces.insert({ oldPosition, piece });
+					if (pieceTaken)
+					{
+						positionsToPieces.insert({ move, takenPieceName });
+						boardImage.pieces.push_back(takenPieceName);
+					}
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+
+				}
+			}
+		}
+	}
+
+	return bestMove;
+}
+
+pair<string, string> ChessGame::getMinimaxMove(int desiredDepth)
+
+{
+	Tree gameTree{ piecesToMoves };
+
+	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
+
+	//reset recursion counter 
+	recursionCounter = 0;
+
+	int bestScore = (moveCount % 2 == 0) ? INT_MIN : INT_MAX; // White maximizes, Black minimizes
+	bool isMaximizingPlayer = (moveCount % 2 == 0); // True if White's turn, False if Black's turn
+
+	pair<string, string> bestMove;
+
+	for (const auto& child : gameTree.root->childrenLinks)
+	{
+		for (const auto& pieceMoves : child->data)
+		{
+			const string& piece = pieceMoves.first;
+			for (const string& move : pieceMoves.second)
+			{
+				if (isMoveValid(piece, move))
+				{
+					// Save the current state
+					auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
+					string takenPieceName;
+					bool pieceTaken = false;
+
+					// Update the board state
+					positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+					if (positionsToPieces.find(move) != positionsToPieces.end())
+					{
+						// Opponent must be there (UNLESS castling!)
+						takenPieceName = positionsToPieces.at(move);
+						takePiece(piece, move);
+						pieceTaken = true;
+					}
+					positionsToPieces.insert({ move, piece });
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+
+					// Evaluate the board state after the move using minimax
+					int score = minimax(*child, desiredDepth - 1, !isMaximizingPlayer);
+
+					// If the score is better than the best score, update the best score and best move
+					if ((isMaximizingPlayer && score > bestScore) || (!isMaximizingPlayer && score < bestScore))
+					{
+						bestScore = score;
+						bestMove = { piece, move };
+					}
+
+					// Revert the board state
+					positionsToPieces.erase(move);
+					positionsToPieces.insert({ oldPosition, piece });
+					if (pieceTaken)
+					{
+						positionsToPieces.insert({ move, takenPieceName });
+						boardImage.pieces.push_back(takenPieceName);
+					}
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+
+				}
+			}
+		}
+	}
+
+	return bestMove;
+}
+
+string ChessGame::hashBoardState()
+{
+	/*don't dwell on the details here 
+	- just wanting a unique key to corresponding board state for an unordered map */
+	string hash; 
+	for (const auto& piece : boardImage.pieces)
+	{
+		hash += piece + boardImage.piecesToPositions.at(piece); //concatenation 
+	}
+
+	return hash; 
+}
+
+int ChessGame::minimaxAlphaBetaParallel(Node& node, int depth, bool isMaximizingPlayer, int alpha, int beta)
+{
+	if (depth == 0 || node.childrenLinks.empty())
+	{
+		return evaluateGameState();
+	}
+
+	if (isMaximizingPlayer)
+	{
+		int maxEval = INT_MIN; 
+
+		vector<future<int>> futures; //ridiculous!
+		for (const auto& child : node.childrenLinks)
+		{
+			futures.push_back(
+				std::async(std::launch::async, //the madness begins
+					&ChessGame::minimaxAlphaBetaParallel,
+					this,
+					std::ref(*child),
+					depth - 1,
+					false,
+					alpha,
+					beta
+				));
+		}
+
+		for (auto& future : futures)
+		{
+			int eval = future.get(); 
+			maxEval = std::max(maxEval, eval); 
+
+			alpha = std::max(alpha, eval); 
+
+			if (beta <= alpha)
+			{
+				break; //"beta cutoff"...
+			}
+		}
+
+		return maxEval; 
+	}
+
+	else
+	{
+		int minEval = INT_MAX;
+		vector<future<int>> futures;
+		for (const auto& child : node.childrenLinks)
+		{
+			futures.push_back(
+				std::async(std::launch::async, 
+					&ChessGame::minimaxAlphaBetaParallel, 
+					this, std::ref(*child), depth - 1, true, alpha, beta));
+		}
+		for (auto& future : futures)
+		{
+			int eval = future.get();
+			minEval = std::min(minEval, eval);
+			beta = std::min(beta, eval);
+			if (beta <= alpha)
+			{
+				break; // Alpha cut-off
+			}
+		}
+		return minEval;
+	}
+}
+
+int ChessGame::minimaxAlphaBeta(Node& node, int depth, bool isMaximizingPlayer, int alpha, int beta)
+{
+	string boardHash = hashBoardState();
+	if (transpositionTable.find(boardHash) != transpositionTable.end()) //"look" no further ... 
+	{
+		return transpositionTable[boardHash];
+	}
+
+	if (depth == 0 || node.childrenLinks.empty())
+	{
+		int eval = evaluateGameState(); 
+		transpositionTable[boardHash] = eval; 
+
+		return eval; 
+	}
+
+	if (isMaximizingPlayer)
+	{
+		int maxEval = INT_MIN;
+		for (const auto& child : node.childrenLinks)
+		{
+			int eval = minimaxAlphaBeta(*child, depth - 1, false, alpha, beta);
+			maxEval = std::max(maxEval, eval);
+			alpha = std::max(alpha, eval);
+			if (beta <= alpha)
+			{
+				break; // Beta cut-off
+			}
+		}
+		transpositionTable[boardHash] = maxEval;
+		return maxEval;
+	}
+	else
+	{
+		int minEval = INT_MAX;
+		for (const auto& child : node.childrenLinks)
+		{
+			int eval = minimaxAlphaBeta(*child, depth - 1, true, alpha, beta);
+			minEval = std::min(minEval, eval);
+			beta = std::min(beta, eval);
+			if (beta <= alpha)
+			{
+				break; // Alpha cut-off
+			}
+		}
+		transpositionTable[boardHash] = minEval;
+		return minEval;
+	}
+}
+
+pair<string, string> ChessGame::getMinimaxAlphaBetaMove(int desiredDepth)
+{
+
+	Tree gameTree{ piecesToMoves };
+
+	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
+
+	//reset recursion counter 
+	recursionCounter = 0;
+
+	int bestScore = (moveCount % 2 == 0) ? INT_MIN : INT_MAX; // White maximizes, Black minimizes
+	bool isMaximizingPlayer = (moveCount % 2 == 0); // True if White's turn, False if Black's turn
+	pair<string, string> bestMove;
+
+
+	for (const auto& child : gameTree.root->childrenLinks)
+	{
+		for (const auto& pieceMoves : child->data)
+		{
+			const string& piece = pieceMoves.first;
+			
+			vector<string> orderedMoves = orderMoves(pieceMoves.second, piece); 
+
+			for (const string& move : pieceMoves.second)
+			{
+				if (isMoveValid(piece, move))
+				{
+					// Save the current state
+					auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
+					string takenPieceName;
+					bool pieceTaken = false;
+
+					// Update the board state
+					positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+					if (positionsToPieces.find(move) != positionsToPieces.end())
+					{
+						// Opponent must be there (UNLESS castling!)
+						takenPieceName = positionsToPieces.at(move);
+						takePiece(piece, move);
+						pieceTaken = true;
+					}
+					positionsToPieces.insert({ move, piece });
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+
+					/*Don't allow checks!*/
+					if (checkForCheck(getPieceColor(piece)))
+					{
+						//undo changes and continue: 
+						positionsToPieces.erase(move);
+						positionsToPieces.insert({ oldPosition, piece });
+						if (pieceTaken)
+						{
+							positionsToPieces.insert({ move, takenPieceName });
+							boardImage.pieces.push_back(takenPieceName);
+						}
+						boardImage.piecesToPositions.clear();
+						boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+						piecesToMoves.clear();
+						getPiecesToMoves();
+
+						continue; 
+					}
+
+					// Evaluate the board state after the move using minimax with alpha-beta pruning
+					int alpha = INT_MIN;
+					int beta = INT_MAX;
+					
+					int score = minimaxAlphaBeta(*child, desiredDepth - 1, !isMaximizingPlayer, alpha, beta);
+
+					//call below uses MULTI-THREADING!
+					//int score = minimaxAlphaBetaParallel(*child, desiredDepth - 1, !isMaximizingPlayer, alpha, beta);
+
+					// If the score is better than the best score, update the best score and best move
+					if ((isMaximizingPlayer && score > bestScore) || (!isMaximizingPlayer && score < bestScore))
+					{
+						bestScore = score;
+						bestMove = { piece, move };
+					}
+
+					// Revert the board state
+					positionsToPieces.erase(move);
+					positionsToPieces.insert({ oldPosition, piece });
+					if (pieceTaken)
+					{
+						positionsToPieces.insert({ move, takenPieceName });
+						boardImage.pieces.push_back(takenPieceName);
+					}
+					boardImage.piecesToPositions.clear();
+					boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+					piecesToMoves.clear();
+					getPiecesToMoves();
+				}
+			}
+		}
+	}
+
+	return bestMove;
+}
+
+int ChessGame::minimax(Node& node, int depth, bool isMaximizingPlayer)
+{
+	if (depth == 0 || node.childrenLinks.empty())
+	{
+		return evaluateGameState(); 
+	}
+
+	if (isMaximizingPlayer)
+	{
+		int maxEval = INT_MIN; 
+		for (const auto& child : node.childrenLinks)
+		{
+			int eval = minimax(*child, depth - 1, false);
+			maxEval = std::max(maxEval, eval);
+		}
+		return maxEval;
+	}
+
+	else
+	{
+		int minEval = INT_MAX; 
+		for (const auto& child : node.childrenLinks)
+		{
+			int eval = minimax(*child, depth - 1, true);
+			minEval = std::min(minEval, eval);
+		}
+		return minEval; 
+	}
+}
+
 
 array<pair<char, int>, 2> ChessGame::getAndConfirmMove()
 {
@@ -279,6 +689,70 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 	//insert the piece at the new position
 	positionsToPieces.insert({ newPosition, pieceName });
 
+	// Handle castling
+	if (pieceName.find("King") != string::npos)
+	{
+		if (pieceName.find("white") != string::npos)
+		{
+			whiteKingMoved = true;
+			if (newPosition == "G1")
+			{
+				// Kingside castling
+				movePieceHelper("whiteRookKSide", "F1");
+				whiteRookMoved[0] = true;
+			}
+			else if (newPosition == "C1")
+			{
+				// Queenside castling
+				movePieceHelper("whiteRookQSide", "D1");
+				whiteRookMoved[1] = true;
+			}
+		}
+		else if (pieceName.find("black") != string::npos)
+		{
+			blackKingMoved = true;
+			if (newPosition == "G8")
+			{
+				// Kingside castling
+				movePieceHelper("blackRookKSide", "F8");
+				blackRookMoved[0] = true;
+			}
+			else if (newPosition == "C8")
+			{
+				// Queenside castling
+				movePieceHelper("blackRookQSide", "D8");
+				blackRookMoved[1] = true;
+			}
+		}
+	}
+	else if (pieceName.find("Rook") != string::npos)
+	{
+		if (pieceName.find("white") != string::npos)
+		{
+			if (oldPosition == "A1")
+			{
+				whiteRookMoved[1] = true;
+			}
+			else if (oldPosition == "H1")
+			{
+				whiteRookMoved[0] = true;
+			}
+		}
+		else if (pieceName.find("black") != string::npos)
+		{
+			if (oldPosition == "A8")
+			{
+				blackRookMoved[1] = true;
+			}
+			else if (oldPosition == "H8")
+			{
+				blackRookMoved[0] = true;
+			}
+		}
+	}
+
+
+
 	//clear piecesToPositions and then get its contents by using the "switch" function: 
 	boardImage.piecesToPositions.clear(); 
 	boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
@@ -328,12 +802,49 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 	/*Write the the image file with the updated board*/
 	drawBoardHelper(oldPosition);
 
-	/*Update game tree: */
-	Tree gameTree{ piecesToMoves };
-	int desiredDepth = 2; 
+	///*generate game tree: */
+	//Tree gameTree{ piecesToMoves };
+	//int desiredDepth = 3; 
 
-	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator 
+	//getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator 
+
+	////reset recursive move count to 0
+	//recursionCounter = 0; 
 }
+
+bool ChessGame::isMoveValid(const string& piece, const string& move)
+{
+	/*Copied code from isThatColorTurn (avoiding the print statemtent in recursion here)*/
+	if (moveCount % 2 == 0)
+	{
+		//white's turn:
+		if (piece.find("white") == string::npos)
+		{
+			return false;
+		}
+	}
+
+	else //black's turn
+	{
+		if (piece.find("black") == string::npos)
+		{
+			return false;
+		}
+	}
+
+	// Check if the move is within the list of possible moves for the piece
+	auto it = piecesToMoves.find(piece);
+	if (it != piecesToMoves.end())
+	{
+		const vector<string>& possibleMoves = it->second;
+		if (std::find(possibleMoves.begin(), possibleMoves.end(), move) != possibleMoves.end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 
 void ChessGame::takePiece(const string& pieceName, const string& newPosition)
 {
@@ -354,23 +865,33 @@ void ChessGame::takePiece(const string& pieceName, const string& newPosition)
 	size_t pieceValue = findPieceValue(opponentPieceName); 
 
 
-	if (pieceName.find("black") != string::npos)
-	{
-		setTerminalColor(TerminalColor::Red);
-		cout << "Black gained " << pieceValue << "\n";
-		setTerminalColor(TerminalColor::Default);
-		blackScore += pieceValue;
-	}
+	//if (pieceName.find("black") != string::npos)
+	//{
+	//	setTerminalColor(TerminalColor::Red);
+	//	if (pieceValue >= 5)
+	//	{
+	//		cout << "Black gained " << pieceValue << "\n";
+	//		cout << "This happened with recursion counter = " << recursionCounter << "\n";
+	//	}
+	//	setTerminalColor(TerminalColor::Default);
+	////	blackScore += pieceValue;
+	//}
 
-	else
-	{
-		setTerminalColor(TerminalColor::Red);
-		cout << "White gained " << pieceValue << "\n";
-		setTerminalColor(TerminalColor::Default);
-		whiteScore += pieceValue;
-	}
+	//else
+	//{
+	//	
+	//	setTerminalColor(TerminalColor::Red);
+	//	if (pieceValue >= 5)
+	//	{
+	//		cout << "White gained " << pieceValue << "\n";
+	//		cout << "This happened with recursion counter = " << recursionCounter << "\n";
+	//	}
 
-	cout << "Score is now (White v Black) " << whiteScore << " to " << blackScore << "\n";
+	//	setTerminalColor(TerminalColor::Default);
+	//	whiteScore += pieceValue;
+	//}
+
+	//cout << "Score is now (White v Black) " << whiteScore << " to " << blackScore << "\n";
 }
 
 
@@ -387,6 +908,8 @@ void ChessGame::drawBoardHelper(const string& oldPosition)
 void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<string>>& data, 
 	int currentDepth, int maxDepth, int moveCount)
 {
+	recursionCounter++; 
+
 	if (currentDepth == maxDepth)
 	{
 		return; 
@@ -468,8 +991,9 @@ void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<str
 
 }
 
-int ChessGame::evaluateGameState()
+int ChessGame::simplestEvaluateGameState()
 {
+
 	//K is number of WHITE kings (only every equal to 0 or 1, but not so for pawns, bishops, etc.)
 	int K = 0;
 	//K_prime is number of BLACK kings 
@@ -512,34 +1036,171 @@ int ChessGame::evaluateGameState()
 	return score;
 }
 
-void ChessGame::updateBoard(const string& piece, const string& newPosition)
+int ChessGame::evaluateGameState()
 {
-	//update board:
-	auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
-	positionsToPieces.erase(oldPosition); //effectively makes the old square empty
+	// Piece values
+	const int PAWN_VALUE = 1;
+	const int KNIGHT_VALUE = 3;
+	const int BISHOP_VALUE = 3;
+	const int ROOK_VALUE = 5;
+	const int QUEEN_VALUE = 9;
+	const int KING_VALUE = 200;
 
-	string takenPieceName;
-	bool pieceTaken = false;
+	const int CHECK_PENALTY = 50; 
 
-	//handle taking an opponent piece by deleting from vector<string> pieceNames!
-	if (positionsToPieces.find(newPosition) != positionsToPieces.end())
+
+	// Piece-square tables
+	const int pawnTable[8][8] = {
+		{ 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 5, 5, 5, 5, 5, 5, 5, 5 },
+		{ 1, 1, 2, 3, 3, 2, 1, 1 },
+		{ 0.5, 0.5, 1, 2.5, 2.5, 1, 0.5, 0.5 },
+		{ 0, 0, 0, 2, 2, 0, 0, 0 },
+		{ 0.5, -0.5, -1, 0, 0, -1, -0.5, 0.5 },
+		{ 0.5, 1, 1, -2, -2, 1, 1, 0.5 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0 }
+	};
+
+	const int knightTable[8][8] = {
+		{ -5, -4, -3, -3, -3, -3, -4, -5 },
+		{ -4, -2, 0, 0, 0, 0, -2, -4 },
+		{ -3, 0, 1, 1.5, 1.5, 1, 0, -3 },
+		{ -3, 0.5, 1.5, 2, 2, 1.5, 0.5, -3 },
+		{ -3, 0, 1.5, 2, 2, 1.5, 0, -3 },
+		{ -3, 0.5, 1, 1.5, 1.5, 1, 0.5, -3 },
+		{ -4, -2, 0, 0.5, 0.5, 0, -2, -4 },
+		{ -5, -4, -3, -3, -3, -3, -4, -5 }
+	};
+
+	const int bishopTable[8][8] = {
+		{ -2, -1, -1, -1, -1, -1, -1, -2 },
+		{ -1, 0, 0, 0, 0, 0, 0, -1 },
+		{ -1, 0, 0.5, 1, 1, 0.5, 0, -1 },
+		{ -1, 0.5, 0.5, 1, 1, 0.5, 0.5, -1 },
+		{ -1, 0, 1, 1, 1, 1, 0, -1 },
+		{ -1, 1, 1, 1, 1, 1, 1, -1 },
+		{ -1, 0.5, 0, 0, 0, 0, 0.5, -1 },
+		{ -2, -1, -1, -1, -1, -1, -1, -2 }
+	};
+
+	const int rookTable[8][8] = {
+		{ 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0.5, 1, 1, 1, 1, 1, 1, 0.5 },
+		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
+		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
+		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
+		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
+		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
+		{ 0, 0, 0, 0.5, 0.5, 0, 0, 0 }
+	};
+
+	const int queenTable[8][8] = {
+		{ -2, -1, -1, -0.5, -0.5, -1, -1, -2 },
+		{ -1, 0, 0, 0, 0, 0, 0, -1 },
+		{ -1, 0, 0.5, 0.5, 0.5, 0.5, 0, -1 },
+		{ -0.5, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5 },
+		{ 0, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5 },
+		{ -1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -1 },
+		{ -1, 0, 0.5, 0, 0, 0, 0, -1 },
+		{ -2, -1, -1, -0.5, -0.5, -1, -1, -2 }
+	};
+
+	const int kingTable[8][8] = {
+		{ -3, -4, -4, -5, -5, -4, -4, -3 },
+		{ -3, -4, -4, -5, -5, -4, -4, -3 },
+		{ -3, -4, -4, -5, -5, -4, -4, -3 },
+		{ -3, -4, -4, -5, -5, -4, -4, -3 },
+		{ -2, -3, -3, -4, -4, -3, -3, -2 },
+		{ -1, -2, -2, -2, -2, -2, -2, -1 },
+		{ 2, 2, 0, 0, 0, 0, 2, 2 },
+		{ 2, 3, 1, 0, 0, 1, 3, 2 }
+	};
+
+	int score = 0;
+
+	for (const auto& piece : boardImage.pieces)
 	{
-		//opponent must be there (UNLESS castling!) 
-		takenPieceName = positionsToPieces.at(newPosition);
-		takePiece(piece, newPosition);
-		pieceTaken = true;
+		string position = boardImage.piecesToPositions.at(piece);
+		char file = position.at(0) - 'A';
+		int rank = position.at(1) - '1';
+
+		if (piece.find("whitePawn") != string::npos)
+		{
+			score += PAWN_VALUE + pawnTable[rank][file];
+		}
+		else if (piece.find("blackPawn") != string::npos)
+		{
+			score -= PAWN_VALUE + pawnTable[7 - rank][file];
+		}
+		else if (piece.find("whiteKnight") != string::npos)
+		{
+			score += KNIGHT_VALUE + knightTable[rank][file];
+		}
+		else if (piece.find("blackKnight") != string::npos)
+		{
+			score -= KNIGHT_VALUE + knightTable[7 - rank][file];
+		}
+		else if (piece.find("whiteBishop") != string::npos)
+		{
+			score += BISHOP_VALUE + bishopTable[rank][file];
+		}
+		else if (piece.find("blackBishop") != string::npos)
+		{
+			score -= BISHOP_VALUE + bishopTable[7 - rank][file];
+		}
+		else if (piece.find("whiteRook") != string::npos)
+		{
+			score += ROOK_VALUE + rookTable[rank][file];
+		}
+		else if (piece.find("blackRook") != string::npos)
+		{
+			score -= ROOK_VALUE + rookTable[7 - rank][file];
+		}
+		else if (piece.find("whiteQueen") != string::npos)
+		{
+			score += QUEEN_VALUE + queenTable[rank][file];
+		}
+		else if (piece.find("blackQueen") != string::npos)
+		{
+			score -= QUEEN_VALUE + queenTable[7 - rank][file];
+		}
+		else if (piece.find("whiteKing") != string::npos)
+		{
+			score += KING_VALUE + kingTable[rank][file];
+
+			if (checkForCheck("white"))
+			{
+				score -= CHECK_PENALTY;
+			}
+		}
+		else if (piece.find("blackKing") != string::npos)
+		{
+			score -= KING_VALUE + kingTable[7 - rank][file];
+
+			if (checkForCheck("black"))
+			{
+				score += CHECK_PENALTY;
+			}
+		}
 	}
 
-	//insert the piece at the new position
-	positionsToPieces.insert({ newPosition, piece});
+	return score;
+}
 
-	//clear piecesToPositions and then get its contents by using the "switch" function: 
-	boardImage.piecesToPositions.clear();
-	boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+vector<string> ChessGame::orderMoves(const vector<string>& moves, const string& piece)
+{
+	vector<string> orderedMoves = moves; 
 
-	//once a piece has moved, possible positions change for ALL pieces, so clear the possible positions map
-	piecesToMoves.clear();
-	getPiecesToMoves();
+	sort(orderedMoves.begin(), orderedMoves.end(),
+		[this, &piece](const string& a, const string& b) //better names for a and b? 
+		{
+			string pieceAtA = getPieceAtPosition(a); 
+			string pieceAtB = getPieceAtPosition(b); 
+
+			return findPieceValue(pieceAtA) > findPieceValue(pieceAtB);
+		});
+
+	return orderedMoves; 
 }
 
 void ChessGame::simulateMove(const string& piece, const string& newPosition, bool determineIfSelfCheck, bool determineIfFork)
@@ -1020,6 +1681,48 @@ vector<string> KingMoveRules::getMoves(char file, int rank, const string& piece,
 			}
 		}
 	}
+
+	// Castling moves
+	if (piece.find("white") != string::npos && !game.whiteKingMoved)
+	{
+		// Kingside castling
+		if (!game.whiteRookMoved[0] && game.getPieceAtPosition("F1") == "" && game.getPieceAtPosition("G1") == "")
+		{
+			//
+			//if (!game.checkForCheck("white")) /*&&*//* !game.simulateMoveForCheck("E1", "F1", "white") && !game.simulateMoveForCheck("E1", "G1", "white")*/
+			//{
+				moves.push_back("G1");
+			//}
+		}
+		// Queenside castling
+		if (!game.whiteRookMoved[1] && game.getPieceAtPosition("B1") == "" && game.getPieceAtPosition("C1") == "" && game.getPieceAtPosition("D1") == "")
+		{
+			//if (!game.checkForCheck("white"))// && !game.simulateMoveForCheck("E1", "D1", "white") && !game.simulateMoveForCheck("E1", "C1", "white"))
+			//{
+				moves.push_back("C1");
+			//}
+		}
+	}
+	else if (piece.find("black") != string::npos && !game.blackKingMoved)
+	{
+		// Kingside castling
+		if (!game.blackRookMoved[0] && game.getPieceAtPosition("F8") == "" && game.getPieceAtPosition("G8") == "")
+		{
+			//if (!game.checkForCheck("black"))// && !game.simulateMoveForCheck("E8", "F8", "black") && !game.simulateMoveForCheck("E8", "G8", "black"))
+			//{
+				moves.push_back("G8");
+			//}
+		}
+		// Queenside castling
+		if (!game.blackRookMoved[1] && game.getPieceAtPosition("B8") == "" && game.getPieceAtPosition("C8") == "" && game.getPieceAtPosition("D8") == "")
+		{
+			//if (!game.checkForCheck("black"))// && !game.simulateMoveForCheck("E8", "D8", "black") && !game.simulateMoveForCheck("E8", "C8", "black"))
+			//{
+				moves.push_back("C8");
+			//}
+		}
+	}
+
 
 	return moves;
 

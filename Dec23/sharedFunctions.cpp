@@ -240,8 +240,9 @@ size_t findPieceValue(string fullPieceName)
 
 	else
 	{
-		cout << "What piece is that?\n";
-		__debugbreak(); 
+		return 0; //this is likely to trigger when `orderMoves` is called 
+		//cout << "What piece is that?\n";
+		//__debugbreak(); 
 	}
 }
 

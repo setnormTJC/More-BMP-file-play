@@ -131,22 +131,8 @@ int main()
 		callNodeJS();
 		openPort3000_andDisplayChessBoard();
 
-		/*
-		Insert game tree stuff ... 
-		
-
-
-		
-
-		//display "best" move: 
-
-
-
-
-
-		*/
 		cout << "Evaluation function returns : " << theGame.evaluateGameState() << "\n";
-		if (theGame.moveCount % 2 == 0)	
+		if (theGame.moveCount % 2 == 0)
 		{
 			cout << "WHITE to move:\n\n";
 		}
@@ -154,6 +140,32 @@ int main()
 		else
 		{
 			cout << "BLACK to move:\n\n";
+		}
+
+		/*
+		//display "best" move: 
+		*/
+		//if (theGame.moveCount > -1)
+		//{
+		int desiredDepth = 4;
+
+		//auto minimaxMove = theGame.getMinimaxMove(desiredDepth);
+		//cout << "Minimax move (with depth =  " << desiredDepth << " is "
+		//	<< minimaxMove.first << " to " << minimaxMove.second << "\n";
+		cout << "Enable move suggestion (y/n)? \n";
+		string moveSuggestionResponse; 
+		getline(std::cin, moveSuggestionResponse);
+		
+		if (moveSuggestionResponse == "y") 
+		//desirable to skip if, ex, playing "standard" opening moves 
+		//ALSO desirable to skip if playing opponent (who will not take these suggestions) 
+		{
+			
+			auto minimaxAlphaBetaMove = theGame.getMinimaxAlphaBetaMove(desiredDepth);
+			setTerminalColor(TerminalColor::Red);
+			cout << "MinimaxAlphaBeta move (with depth =  " << desiredDepth << " is "
+				<< minimaxAlphaBetaMove.first << " to " << minimaxAlphaBetaMove.second << "\n";
+			setTerminalColor(TerminalColor::Default);
 		}
 
 		string response;
@@ -206,6 +218,8 @@ int main()
 		}
 
 		soundAlertIfImagesTakingUpTooMuchSpace();
+
+		system("cls"); 
 	}
 
 	cout << "\n\n\nGame over!";
