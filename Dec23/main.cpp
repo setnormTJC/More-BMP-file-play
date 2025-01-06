@@ -147,7 +147,13 @@ int main()
 		*/
 		//if (theGame.moveCount > -1)
 		//{
-		int desiredDepth = 4;
+
+
+
+		int desiredDepth = 4; //the ALL-IMPORTANT quantity ... 
+
+
+
 
 		//auto minimaxMove = theGame.getMinimaxMove(desiredDepth);
 		//cout << "Minimax move (with depth =  " << desiredDepth << " is "
@@ -156,17 +162,34 @@ int main()
 		string moveSuggestionResponse; 
 		getline(std::cin, moveSuggestionResponse);
 		
+
 		if (moveSuggestionResponse == "y") 
 		//desirable to skip if, ex, playing "standard" opening moves 
 		//ALSO desirable to skip if playing opponent (who will not take these suggestions) 
 		{
-			
+			ofstream fout{ "howLongItTakes.txt", ios::app };
+			auto start = std::chrono::system_clock::now(); 
 			auto minimaxAlphaBetaMove = theGame.getMinimaxAlphaBetaMove(desiredDepth);
+
+
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> elapsed_seconds = end - start; 
+
+			fout << "With depth = " << desiredDepth << " getMinimaxAlphaBetaMove took "
+				<< elapsed_seconds.count() << " (seconds?) \n";
+
+			fout.close();
 			setTerminalColor(TerminalColor::Red);
+
 			cout << "MinimaxAlphaBeta move (with depth =  " << desiredDepth << " is "
 				<< minimaxAlphaBetaMove.first << " to " << minimaxAlphaBetaMove.second << "\n";
 			setTerminalColor(TerminalColor::Default);
+
+
 		}
+
+		//write the time it took for getMinimaxAlphaBetaMove with given depth out to file (for comparison/benchmarking)
+	
 
 		string response;
 		displayOptions();

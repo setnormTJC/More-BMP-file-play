@@ -1,7 +1,9 @@
 #include "ChessGame.h"
 
 
-size_t ChessGame::recursionCounter = 0; 
+
+size_t ChessGame::alphaBetaCallCounter = 0; 
+
 
 ChessGame::ChessGame()
 {
@@ -63,8 +65,6 @@ pair<string, string> ChessGame::getStrongishMove(int desiredDepth)
 
 	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
 	
-	//reset recursion counter 
-	recursionCounter = 0; 
 
 	int bestScore = INT_MIN; // Initialize to a very low value
 	pair<string, string> bestMove;
@@ -136,8 +136,6 @@ pair<string, string> ChessGame::getMinimaxMove(int desiredDepth)
 
 	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
 
-	//reset recursion counter 
-	recursionCounter = 0;
 
 	int bestScore = (moveCount % 2 == 0) ? INT_MIN : INT_MAX; // White maximizes, Black minimizes
 	bool isMaximizingPlayer = (moveCount % 2 == 0); // True if White's turn, False if Black's turn
@@ -224,52 +222,87 @@ int ChessGame::minimaxAlphaBetaParallel(Node& node, int depth, bool isMaximizing
 		return evaluateGameState();
 	}
 
+	//LIMIT! 
+	const int maxConcurrentTasks = std::thread::hardware_concurrency(); 
+	vector<future<int>> futures; //ridiculous!
+	std::mutex mtx; //mutual exclusion!
+
 	if (isMaximizingPlayer)
 	{
 		int maxEval = INT_MIN; 
 
-		vector<future<int>> futures; //ridiculous!
 		for (const auto& child : node.childrenLinks)
 		{
+			if (futures.size() >= maxConcurrentTasks)
+			{
+				for (auto& future : futures)
+				{
+					int eval = future.get();
+					maxEval = std::max(maxEval, eval);
+
+					alpha = std::max(alpha, eval);
+
+					if (beta <= alpha)
+					{
+						break; //"beta cutoff"...
+					}
+				}
+				futures.clear(); 
+			}
 			futures.push_back(
 				std::async(std::launch::async, //the madness begins
-					&ChessGame::minimaxAlphaBetaParallel,
-					this,
-					std::ref(*child),
-					depth - 1,
-					false,
-					alpha,
-					beta
+					[&]()
+					{
+						std::lock_guard<std::mutex> lock(mtx); 
+						return minimaxAlphaBetaParallel(*child, depth - 1, false, alpha, beta);
+					}
 				));
 		}
 
 		for (auto& future : futures)
 		{
-			int eval = future.get(); 
-			maxEval = std::max(maxEval, eval); 
-
-			alpha = std::max(alpha, eval); 
-
+			int eval = future.get();
+			maxEval = std::max(maxEval, eval);
+			alpha = std::max(alpha, eval);
 			if (beta <= alpha)
 			{
-				break; //"beta cutoff"...
+				break; // Beta cut-off
 			}
 		}
-
 		return maxEval; 
 	}
 
 	else
 	{
 		int minEval = INT_MAX;
-		vector<future<int>> futures;
+
 		for (const auto& child : node.childrenLinks)
 		{
+			if (futures.size() >= maxConcurrentTasks)
+			{
+				for (auto& future : futures)
+				{
+					int eval = future.get();
+					minEval = std::min(minEval, eval);
+					beta = std::min(beta, eval);
+					if (beta <= alpha)
+					{
+						break; // Alpha cut-off
+					}
+				}
+				futures.clear();
+			}
+
 			futures.push_back(
-				std::async(std::launch::async, 
-					&ChessGame::minimaxAlphaBetaParallel, 
-					this, std::ref(*child), depth - 1, true, alpha, beta));
+				std::async(std::launch::async,
+					[&]() {
+						std::lock_guard<std::mutex> lock(mtx);
+						return minimaxAlphaBetaParallel(*child, depth - 1, true, alpha, beta);
+					}
+				)
+			);
 		}
+
 		for (auto& future : futures)
 		{
 			int eval = future.get();
@@ -280,12 +313,46 @@ int ChessGame::minimaxAlphaBetaParallel(Node& node, int depth, bool isMaximizing
 				break; // Alpha cut-off
 			}
 		}
+
 		return minEval;
 	}
+
+}
+
+bool ChessGame::isPieceThreatened(const string& position, char opponentColor) 
+{
+	for (const auto& [opponentPiece, moves] : piecesToMoves) 
+	{
+		if (opponentPiece[0] == opponentColor) 
+		{
+			if (std::find(moves.begin(), moves.end(), position) != moves.end()) 
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 int ChessGame::minimaxAlphaBeta(Node& node, int depth, bool isMaximizingPlayer, int alpha, int beta)
 {
+
+	//alphaBetaCallCounter = 0; // Static counter to track the number of recursive calls
+
+	// Increment the counter
+	alphaBetaCallCounter++;
+
+	// Print a message every 10,000 iterations
+	//if (alphaBetaCallCounter % 10'000 == 0)
+	//{
+	//	std::cout << "minimaxAlphaBeta call count: " << alphaBetaCallCounter << std::endl;
+	//}
+
+	if (alphaBetaCallCounter % 1'000 == 0)
+	{
+		std::cout << "minimaxAlphaBeta call count: " << alphaBetaCallCounter << std::endl;
+	}
+
 	string boardHash = hashBoardState();
 	if (transpositionTable.find(boardHash) != transpositionTable.end()) //"look" no further ... 
 	{
@@ -336,13 +403,13 @@ int ChessGame::minimaxAlphaBeta(Node& node, int depth, bool isMaximizingPlayer, 
 
 pair<string, string> ChessGame::getMinimaxAlphaBetaMove(int desiredDepth)
 {
-
+	
 	Tree gameTree{ piecesToMoves };
 
 	getGameTreeRecursively(*gameTree.root, piecesToMoves, 0, desiredDepth, moveCount); //note the dereferencing operator
 
 	//reset recursion counter 
-	recursionCounter = 0;
+	//recursionCounter = 0;
 
 	int bestScore = (moveCount % 2 == 0) ? INT_MIN : INT_MAX; // White maximizes, Black minimizes
 	bool isMaximizingPlayer = (moveCount % 2 == 0); // True if White's turn, False if Black's turn
@@ -432,6 +499,11 @@ pair<string, string> ChessGame::getMinimaxAlphaBetaMove(int desiredDepth)
 			}
 		}
 	}
+
+	//reset number of nodes in game tree to 0 (because it will/may be regenerated on next move) 
+	gameTreeNodeCount = 0; 
+	//also reset alphaBetaCallCounter
+	alphaBetaCallCounter = 0; 
 
 	return bestMove;
 }
@@ -908,8 +980,15 @@ void ChessGame::drawBoardHelper(const string& oldPosition)
 void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<string>>& data, 
 	int currentDepth, int maxDepth, int moveCount)
 {
-	recursionCounter++; 
+	//recursionCounter++; 
+	//display an update every 10K nodes ("progress report" so I'm not left in the lurch) 
+	if (gameTreeNodeCount % 10'000 == 0) //expect ~160'000 nodes at level 4 
+	{
+		cout << "Generating game tree ... currently, nodeCount = " << gameTreeNodeCount << "\n";
+	}
 
+	//(because ~20 moves per "ply" and 20 ^4 = 160'000
+									
 	if (currentDepth == maxDepth)
 	{
 		return; 
@@ -924,6 +1003,7 @@ void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<str
 		{
 			continue; 
 		}
+
 		//else get all moves available to that piece: 
 		for (int moveIndex = 0; moveIndex < piecesToMoves.at(piece).size(); ++moveIndex)
 		{
@@ -989,52 +1069,53 @@ void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<str
 
 	}
 
+
 }
 
-int ChessGame::simplestEvaluateGameState()
-{
-
-	//K is number of WHITE kings (only every equal to 0 or 1, but not so for pawns, bishops, etc.)
-	int K = 0;
-	//K_prime is number of BLACK kings 
-	int K_prime = 0;
-	
-	int Q = 0, Q_prime = 0, R = 0, R_prime = 0;
-	int B = 0, B_prime = 0, N = 0, N_prime = 0, P = 0, P_prime = 0;
-	int D = 0, D_prime = 0, S = 0, S_prime = 0, I = 0, I_prime = 0;
-	int M = 0, M_prime = 0;
-	
-	// Count pieces and other factors for both players
-	for (const auto& piece : boardImage.pieces) 
-	{
-		if (piece.find("whiteKing") != string::npos) K++;
-		if (piece.find("blackKing") != string::npos) K_prime++;
-		if (piece.find("whiteQueen") != string::npos) Q++;
-		if (piece.find("blackQueen") != string::npos) Q_prime++;
-		if (piece.find("whiteRook") != string::npos) R++;
-		if (piece.find("blackRook") != string::npos) R_prime++;
-		if (piece.find("whiteBishop") != string::npos) B++;
-		if (piece.find("blackBishop") != string::npos) B_prime++;
-		if (piece.find("whiteKnight") != string::npos) N++;
-		if (piece.find("blackKnight") != string::npos) N_prime++;
-		if (piece.find("whitePawn") != string::npos) P++;
-		if (piece.find("blackPawn") != string::npos) P_prime++;
-	
-	
-		//add doubled and isolated pawns logic if desired ...
-	
-	}
-	
-	
-	int score = 200 * (K - K_prime) + 9 * (Q - Q_prime) + 5 * (R - R_prime) +
-		3 * (B - B_prime + N - N_prime) + (P - P_prime) -
-	
-		/*the rest of these are 0 for now ...*/
-		0.5 * (D - D_prime + S - S_prime + I - I_prime) +
-		0.1 * (M - M_prime);
-	
-	return score;
-}
+//int ChessGame::simplestEvaluateGameState()
+//{
+//
+//	//K is number of WHITE kings (only every equal to 0 or 1, but not so for pawns, bishops, etc.)
+//	int K = 0;
+//	//K_prime is number of BLACK kings 
+//	int K_prime = 0;
+//	
+//	int Q = 0, Q_prime = 0, R = 0, R_prime = 0;
+//	int B = 0, B_prime = 0, N = 0, N_prime = 0, P = 0, P_prime = 0;
+//	int D = 0, D_prime = 0, S = 0, S_prime = 0, I = 0, I_prime = 0;
+//	int M = 0, M_prime = 0;
+//	
+//	// Count pieces and other factors for both players
+//	for (const auto& piece : boardImage.pieces) 
+//	{
+//		if (piece.find("whiteKing") != string::npos) K++;
+//		if (piece.find("blackKing") != string::npos) K_prime++;
+//		if (piece.find("whiteQueen") != string::npos) Q++;
+//		if (piece.find("blackQueen") != string::npos) Q_prime++;
+//		if (piece.find("whiteRook") != string::npos) R++;
+//		if (piece.find("blackRook") != string::npos) R_prime++;
+//		if (piece.find("whiteBishop") != string::npos) B++;
+//		if (piece.find("blackBishop") != string::npos) B_prime++;
+//		if (piece.find("whiteKnight") != string::npos) N++;
+//		if (piece.find("blackKnight") != string::npos) N_prime++;
+//		if (piece.find("whitePawn") != string::npos) P++;
+//		if (piece.find("blackPawn") != string::npos) P_prime++;
+//	
+//	
+//		//add doubled and isolated pawns logic if desired ...
+//	
+//	}
+//	
+//	
+//	int score = 200 * (K - K_prime) + 9 * (Q - Q_prime) + 5 * (R - R_prime) +
+//		3 * (B - B_prime + N - N_prime) + (P - P_prime) -
+//	
+//		/*the rest of these are 0 for now ...*/
+//		0.5 * (D - D_prime + S - S_prime + I - I_prime) +
+//		0.1 * (M - M_prime);
+//	
+//	return score;
+//}
 
 int ChessGame::evaluateGameState()
 {
@@ -1050,70 +1131,70 @@ int ChessGame::evaluateGameState()
 
 
 	// Piece-square tables
-	const int pawnTable[8][8] = {
-		{ 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 5, 5, 5, 5, 5, 5, 5, 5 },
-		{ 1, 1, 2, 3, 3, 2, 1, 1 },
-		{ 0.5, 0.5, 1, 2.5, 2.5, 1, 0.5, 0.5 },
-		{ 0, 0, 0, 2, 2, 0, 0, 0 },
-		{ 0.5, -0.5, -1, 0, 0, -1, -0.5, 0.5 },
-		{ 0.5, 1, 1, -2, -2, 1, 1, 0.5 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0 }
+	const float pawnTable[8][8] = {
+		{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+		{ 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f },
+		{ 1.0f, 1.0f, 2.0f, 3.0f, 3.0f, 2.0f, 1.0f, 1.0f },
+		{ 0.5f, 0.5f, 1.0f, 2.5f, 2.5f, 1.0f, 0.5f, 0.5f },
+		{ 0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -1.0f, -0.5f, 0.5f },
+		{ 0.5f, 1.0f, 1.0f, -2.0f, -2.0f, 1.0f, 1.0f, 0.5f },
+		{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }
 	};
 
-	const int knightTable[8][8] = {
-		{ -5, -4, -3, -3, -3, -3, -4, -5 },
-		{ -4, -2, 0, 0, 0, 0, -2, -4 },
-		{ -3, 0, 1, 1.5, 1.5, 1, 0, -3 },
-		{ -3, 0.5, 1.5, 2, 2, 1.5, 0.5, -3 },
-		{ -3, 0, 1.5, 2, 2, 1.5, 0, -3 },
-		{ -3, 0.5, 1, 1.5, 1.5, 1, 0.5, -3 },
-		{ -4, -2, 0, 0.5, 0.5, 0, -2, -4 },
-		{ -5, -4, -3, -3, -3, -3, -4, -5 }
+	const float knightTable[8][8] = {
+		{ -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f },
+		{ -4.0f, -2.0f, 0.0f, 0.0f, 0.0f, 0.0f, -2.0f, -4.0f },
+		{ -3.0f, 0.0f, 1.0f, 1.5f, 1.5f, 1.0f, 0.0f, -3.0f },
+		{ -3.0f, 0.5f, 1.5f, 2.0f, 2.0f, 1.5f, 0.5f, -3.0f },
+		{ -3.0f, 0.0f, 1.5f, 2.0f, 2.0f, 1.5f, 0.0f, -3.0f },
+		{ -3.0f, 0.5f, 1.0f, 1.5f, 1.5f, 1.0f, 0.5f, -3.0f },
+		{ -4.0f, -2.0f, 0.0f, 0.5f, 0.5f, 0.0f, -2.0f, -4.0f },
+		{ -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f }
 	};
 
-	const int bishopTable[8][8] = {
-		{ -2, -1, -1, -1, -1, -1, -1, -2 },
-		{ -1, 0, 0, 0, 0, 0, 0, -1 },
-		{ -1, 0, 0.5, 1, 1, 0.5, 0, -1 },
-		{ -1, 0.5, 0.5, 1, 1, 0.5, 0.5, -1 },
-		{ -1, 0, 1, 1, 1, 1, 0, -1 },
-		{ -1, 1, 1, 1, 1, 1, 1, -1 },
-		{ -1, 0.5, 0, 0, 0, 0, 0.5, -1 },
-		{ -2, -1, -1, -1, -1, -1, -1, -2 }
+	const float bishopTable[8][8] = {
+		{ -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f },
+		{ -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ -1.0f, 0.0f, 0.5f, 1.0f, 1.0f, 0.5f, 0.0f, -1.0f },
+		{ -1.0f, 0.5f, 0.5f, 1.0f, 1.0f, 0.5f, 0.5f, -1.0f },
+		{ -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f },
+		{ -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f },
+		{ -1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, -1.0f },
+		{ -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f }
 	};
 
-	const int rookTable[8][8] = {
-		{ 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0.5, 1, 1, 1, 1, 1, 1, 0.5 },
-		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
-		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
-		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
-		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
-		{ -0.5, 0, 0, 0, 0, 0, 0, -0.5 },
-		{ 0, 0, 0, 0.5, 0.5, 0, 0, 0 }
+	const float rookTable[8][8] = {
+		{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f },
+		{ -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f },
+		{ -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f },
+		{ -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f },
+		{ -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f },
+		{ -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f },
+		{ 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f }
 	};
 
-	const int queenTable[8][8] = {
-		{ -2, -1, -1, -0.5, -0.5, -1, -1, -2 },
-		{ -1, 0, 0, 0, 0, 0, 0, -1 },
-		{ -1, 0, 0.5, 0.5, 0.5, 0.5, 0, -1 },
-		{ -0.5, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5 },
-		{ 0, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5 },
-		{ -1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -1 },
-		{ -1, 0, 0.5, 0, 0, 0, 0, -1 },
-		{ -2, -1, -1, -0.5, -0.5, -1, -1, -2 }
+	const float queenTable[8][8] = {
+		{ -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f },
+		{ -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -1.0f },
+		{ -0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -0.5f },
+		{ 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -0.5f },
+		{ -1.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -1.0f },
+		{ -1.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f }
 	};
 
-	const int kingTable[8][8] = {
-		{ -3, -4, -4, -5, -5, -4, -4, -3 },
-		{ -3, -4, -4, -5, -5, -4, -4, -3 },
-		{ -3, -4, -4, -5, -5, -4, -4, -3 },
-		{ -3, -4, -4, -5, -5, -4, -4, -3 },
-		{ -2, -3, -3, -4, -4, -3, -3, -2 },
-		{ -1, -2, -2, -2, -2, -2, -2, -1 },
-		{ 2, 2, 0, 0, 0, 0, 2, 2 },
-		{ 2, 3, 1, 0, 0, 1, 3, 2 }
+	const float kingTable[8][8] = {
+		{ -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f },
+		{ -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f },
+		{ -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f },
+		{ -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f },
+		{ -2.0f, -3.0f, -3.0f, -4.0f, -4.0f, -3.0f, -3.0f, -2.0f },
+		{ -1.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -1.0f },
+		{ 2.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 2.0f },
+		{ 2.0f, 3.0f, 1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 2.0f }
 	};
 
 	int score = 0;
@@ -1123,6 +1204,25 @@ int ChessGame::evaluateGameState()
 		string position = boardImage.piecesToPositions.at(piece);
 		char file = position.at(0) - 'A';
 		int rank = position.at(1) - '1';
+
+		//penalize for blunders: 
+		if (piece[0] == 'w')
+		{
+			if (isPieceThreatened(position, 'b'))
+			{
+				score -= findPieceValue(piece); 
+			}
+		}
+
+		else
+		{
+			if (isPieceThreatened(position, 'w'))
+			{
+				score += findPieceValue(piece); 
+			}
+		}
+
+
 
 		if (piece.find("whitePawn") != string::npos)
 		{
@@ -1460,8 +1560,9 @@ Node::Node() = default;
 Tree::Tree()
 	:root(make_unique<Node>())
 {
+	depth = 1; 
+}	  
 
-}
 Tree::Tree(const map <string, vector<string>> & data)
 {
 

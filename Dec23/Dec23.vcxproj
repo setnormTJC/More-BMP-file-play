@@ -77,12 +77,16 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <HeapReserveSize>0x1000000</HeapReserveSize>
       <HeapCommitSize>0x100000</HeapCommitSize>
+      <Profile>true</Profile>
+      <StackReserveSize>0x1000000</StackReserveSize>
+      <StackCommitSize>0x100000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -94,6 +98,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,6 +107,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <HeapReserveSize>0x1000000</HeapReserveSize>
       <HeapCommitSize>0x100000</HeapCommitSize>
+      <Profile>true</Profile>
+      <StackReserveSize>0x1000000</StackReserveSize>
+      <StackCommitSize>0x100000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,12 +119,16 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <HeapReserveSize>0x1000000</HeapReserveSize>
       <HeapCommitSize>0x100000</HeapCommitSize>
+      <Profile>true</Profile>
+      <StackReserveSize>0x1000000</StackReserveSize>
+      <StackCommitSize>0x100000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -128,6 +140,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,6 +149,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <HeapReserveSize>0x1000000</HeapReserveSize>
       <HeapCommitSize>0x100000</HeapCommitSize>
+      <Profile>true</Profile>
+      <StackReserveSize>0x1000000</StackReserveSize>
+      <StackCommitSize>0x100000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

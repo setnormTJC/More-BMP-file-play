@@ -1,0 +1,8 @@
+With depth = 5 getMinimaxAlphaBetaMove took 48.6742 (seconds?) 
+With depth = 5 getMinimaxAlphaBetaMove took 47.3202 (seconds?) 
+With depth = 5 getMinimaxAlphaBetaMove took 168.011 (seconds?) 
+With depth = 4 getMinimaxAlphaBetaMove took 103.986 (seconds?) 
+With depth = 4 getMinimaxAlphaBetaMove took 10.6516 (seconds?) 
+With depth = 4 getMinimaxAlphaBetaMove took 99.3687 (seconds?) 
+With depth = 4 getMinimaxAlphaBetaMove took 87.4099 (seconds?) 
+With depth = 4 getMinimaxAlphaBetaMove took 83.2443 (seconds?) 

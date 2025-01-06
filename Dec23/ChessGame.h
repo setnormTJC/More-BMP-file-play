@@ -19,6 +19,8 @@
 
 #include<future> //...MULTI-THREADING
 
+#include<numeric> 
+
 using std::unique_ptr, std::make_unique; 
 using std::sort; 
 using std::unordered_map;
@@ -73,14 +75,14 @@ class ChessGame
 	/*ex: "whitePawnE2" will be mapped to {E3, E4} initially*/
 	map <string, vector<string>> piecesToMoves;
 
-	size_t blackScore = 0;
-	size_t whiteScore = 0;
+	int blackScore = 0;
+	int whiteScore = 0;
 
 
 
 	size_t gameTreeNodeCount = 0; 
 
-	static size_t recursionCounter; 
+	static size_t alphaBetaCallCounter;
 
 	unordered_map<string, int> transpositionTable;
 
@@ -125,6 +127,9 @@ class ChessGame
 
 	int minimaxAlphaBetaParallel(Node& node, int depth, bool isMaximizingPlayer, int alpha, int beta);
 
+	/*called by: evaluateGameState*/
+	bool isPieceThreatened(const string& position, char opponentColor);
+
 public:
 	/************************public member functions ***********************************/
 	ChessGame();
@@ -158,7 +163,7 @@ public:
 	* ONLY considers "material balance" 
 	* @returns the score for the current board state - if > 0, WHITE is winning (arbitrary convention), if < 0, BLACK is winning
 	*/
-	int simplestEvaluateGameState();
+	//int simplestEvaluateGameState();
 
 	/*Maybe medium complexity - factors in weakness and strengths of piece location using "piece tables"
 	ex: if knight is in corner, it can only move to two spots (rather than max of 8 spots in middle of board) 
@@ -167,7 +172,8 @@ public:
 public:
 	/************************public member VARIABLES ***********************************/
 
-	size_t moveCount; 
+	/*unsigned short - UNLIKELY that game exceeds 32K moves ...*/
+	unsigned short moveCount; 
 	
 	bool isKingInCheck = false; 
 
