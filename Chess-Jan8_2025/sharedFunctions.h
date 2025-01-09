@@ -44,8 +44,24 @@ struct PairHash
 };
 
 
+/*preceded by cout << "\033" ANSI thing
+-and "postceded" by "m"
+*/
+enum class TerminalColor
+{
+	Red = 31,
+	Green = 32,
+	Yellow = 33,
+	Blue = 34,
+	Magenta = 35,
+	Cyan = 36,
+	White = 37,
+	Default = 0
+};
+
 namespace sharedFunctions
 {
+
 	vector<vector<ChessPosition>> getChessPositions();
 
 	template<typename T1, typename T2, typename OriginalKeyHash, typename SwitchedKeyHash>
@@ -69,6 +85,16 @@ namespace sharedFunctions
 
 	/*Returns Neutral, Friend, or Foe*/
 	string getPieceRelationship(const string& currentPiece, const string& contentsOfNewPosition);
+
+	string getPieceColor(const string& fullPieceName);
+
+	unsigned short findPieceValue(const string& fullPieceName);
+
+	/*For drawing attention to checks, maybe "good" moves and "bad" moves later*/
+	void setTerminalColor(TerminalColor color);
+
+
+
 
 };
 

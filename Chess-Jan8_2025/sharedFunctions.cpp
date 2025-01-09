@@ -184,3 +184,74 @@ string sharedFunctions::getPieceRelationship(const string& currentPiece, const s
 	}
 }
 
+string sharedFunctions::getPieceColor(const string& fullPieceName)
+{
+	if (fullPieceName.find("white") != string::npos)
+	{
+		return "white";
+	}
+
+	else
+	{
+		return "black";
+	}
+}
+
+unsigned short sharedFunctions::findPieceValue(const string& fullPieceName)
+{
+	if (fullPieceName.find("Pawn") != string::npos)
+	{
+		return 1;
+	}
+
+	else if (fullPieceName.find("Bishop") != string::npos)
+	{
+		return 3;
+	}
+
+	else if (fullPieceName.find("Knight") != string::npos)
+	{
+		return 3;
+	}
+
+	else if (fullPieceName.find("Rook") != string::npos)
+	{
+		return 5;
+	}
+
+	else if (fullPieceName.find("Queen") != string::npos)
+	{
+		return 9;
+	}
+
+	else if (fullPieceName.find("King") != string::npos)
+	{
+		return 200; //arbitrary-ish "large value from Shannon paper 
+	}
+
+	else
+	{
+		return 0; //this is likely to trigger when `orderMoves` is called 
+		//cout << "What piece is that?\n";
+		//__debugbreak(); 
+	}
+}
+
+string getPieceColor(const string& fullPieceName)
+{
+	if (fullPieceName.find("white") != string::npos)
+	{
+		return "white";
+	}
+
+	else
+	{
+		return "black";
+	}
+}
+
+void sharedFunctions::setTerminalColor(TerminalColor color)
+{
+	cout << "\033" << static_cast<int>(color) << "m";
+}
+

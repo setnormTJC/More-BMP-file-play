@@ -108,6 +108,14 @@ vector<string> ChessImageBMP::mapPiecesToImages_andReturnPieces()
 
 }
 
+bool ChessImageBMP::isPieceOnBoard(const string& pieceName)
+{
+	auto pieceNameIterator = std::find(pieces.begin(), pieces.end(), pieceName);
+	//anticipate ERASING pieceName from vector `pieceNames` when pieces get "taken" in later functions...
+
+	return (pieceNameIterator != pieces.end());
+}
+
 
 ChessPosition ChessImageBMP::convertImageCoordinatesToPosition(int x, int y)
 {

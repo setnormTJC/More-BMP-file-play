@@ -57,11 +57,14 @@ public:
 	/*NOTE: this method also RETURNS vector<string> pieceNames*/
 	vector<string> mapPiecesToImages_andReturnPieces();
 
+	bool isPieceOnBoard(const string& pieceName);
 
 	//public member vars********************************************/
 	vector<string> pieces;
 
 	unordered_map<string, ChessPosition> piecesToPositions; 
+
+
 
 };
 

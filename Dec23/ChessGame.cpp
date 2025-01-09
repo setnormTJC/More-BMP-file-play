@@ -766,34 +766,34 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 	{
 		if (pieceName.find("white") != string::npos)
 		{
-			whiteKingMoved = true;
+			hasWhiteKingMoved = true;
 			if (newPosition == "G1")
 			{
 				// Kingside castling
 				movePieceHelper("whiteRookKSide", "F1");
-				whiteRookMoved[0] = true;
+				hasWhiteRookMoved[0] = true;
 			}
 			else if (newPosition == "C1")
 			{
 				// Queenside castling
 				movePieceHelper("whiteRookQSide", "D1");
-				whiteRookMoved[1] = true;
+				hasWhiteRookMoved[1] = true;
 			}
 		}
 		else if (pieceName.find("black") != string::npos)
 		{
-			blackKingMoved = true;
+			hasBlackKingMoved = true;
 			if (newPosition == "G8")
 			{
 				// Kingside castling
 				movePieceHelper("blackRookKSide", "F8");
-				blackRookMoved[0] = true;
+				hasBlackRookMoved[0] = true;
 			}
 			else if (newPosition == "C8")
 			{
 				// Queenside castling
 				movePieceHelper("blackRookQSide", "D8");
-				blackRookMoved[1] = true;
+				hasBlackRookMoved[1] = true;
 			}
 		}
 	}
@@ -803,22 +803,22 @@ void ChessGame::movePieceHelper(const string& pieceName, const string& newPositi
 		{
 			if (oldPosition == "A1")
 			{
-				whiteRookMoved[1] = true;
+				hasWhiteRookMoved[1] = true;
 			}
 			else if (oldPosition == "H1")
 			{
-				whiteRookMoved[0] = true;
+				hasWhiteRookMoved[0] = true;
 			}
 		}
 		else if (pieceName.find("black") != string::npos)
 		{
 			if (oldPosition == "A8")
 			{
-				blackRookMoved[1] = true;
+				hasBlackRookMoved[1] = true;
 			}
 			else if (oldPosition == "H8")
 			{
-				blackRookMoved[0] = true;
+				hasBlackRookMoved[0] = true;
 			}
 		}
 	}
@@ -1024,7 +1024,7 @@ void ChessGame::getGameTreeRecursively(Node& parentNode, unordered_map <string, 
 				takePiece(piece, newPosition);
 				pieceTaken = true;
 			}
-
+2
 			//insert the piece at the new position
 			positionsToPieces.insert({ newPosition, piece });
 
@@ -1784,10 +1784,10 @@ vector<string> KingMoveRules::getMoves(char file, int rank, const string& piece,
 	}
 
 	// Castling moves
-	if (piece.find("white") != string::npos && !game.whiteKingMoved)
+	if (piece.find("white") != string::npos && !game.hasWhiteKingMoved)
 	{
 		// Kingside castling
-		if (!game.whiteRookMoved[0] && game.getPieceAtPosition("F1") == "" && game.getPieceAtPosition("G1") == "")
+		if (!game.hasWhiteRookMoved[0] && game.getPieceAtPosition("F1") == "" && game.getPieceAtPosition("G1") == "")
 		{
 			//
 			//if (!game.checkForCheck("white")) /*&&*//* !game.simulateMoveForCheck("E1", "F1", "white") && !game.simulateMoveForCheck("E1", "G1", "white")*/
@@ -1796,7 +1796,7 @@ vector<string> KingMoveRules::getMoves(char file, int rank, const string& piece,
 			//}
 		}
 		// Queenside castling
-		if (!game.whiteRookMoved[1] && game.getPieceAtPosition("B1") == "" && game.getPieceAtPosition("C1") == "" && game.getPieceAtPosition("D1") == "")
+		if (!game.hasWhiteRookMoved[1] && game.getPieceAtPosition("B1") == "" && game.getPieceAtPosition("C1") == "" && game.getPieceAtPosition("D1") == "")
 		{
 			//if (!game.checkForCheck("white"))// && !game.simulateMoveForCheck("E1", "D1", "white") && !game.simulateMoveForCheck("E1", "C1", "white"))
 			//{
@@ -1804,10 +1804,10 @@ vector<string> KingMoveRules::getMoves(char file, int rank, const string& piece,
 			//}
 		}
 	}
-	else if (piece.find("black") != string::npos && !game.blackKingMoved)
+	else if (piece.find("black") != string::npos && !game.hasBlackKingMoved)
 	{
 		// Kingside castling
-		if (!game.blackRookMoved[0] && game.getPieceAtPosition("F8") == "" && game.getPieceAtPosition("G8") == "")
+		if (!game.hasBlackRookMoved[0] && game.getPieceAtPosition("F8") == "" && game.getPieceAtPosition("G8") == "")
 		{
 			//if (!game.checkForCheck("black"))// && !game.simulateMoveForCheck("E8", "F8", "black") && !game.simulateMoveForCheck("E8", "G8", "black"))
 			//{
@@ -1815,7 +1815,7 @@ vector<string> KingMoveRules::getMoves(char file, int rank, const string& piece,
 			//}
 		}
 		// Queenside castling
-		if (!game.blackRookMoved[1] && game.getPieceAtPosition("B8") == "" && game.getPieceAtPosition("C8") == "" && game.getPieceAtPosition("D8") == "")
+		if (!game.hasBlackRookMoved[1] && game.getPieceAtPosition("B8") == "" && game.getPieceAtPosition("C8") == "" && game.getPieceAtPosition("D8") == "")
 		{
 			//if (!game.checkForCheck("black"))// && !game.simulateMoveForCheck("E8", "D8", "black") && !game.simulateMoveForCheck("E8", "C8", "black"))
 			//{

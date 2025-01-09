@@ -14,8 +14,15 @@ ChessGame::ChessGame()
 		positionsToPieces.insert({ position, piece });
 	}
 
+	//for caching of moves: 
+	for (const auto& piece : boardImage.pieces)
+	{
+		piecesToUpdate.insert(piece); 
+	}
+
 	getPiecesToMoves();
 
+	moveCount = 0;
 
 	string baseFolderOfNodeJS = "testingNodeJS/public/";
 	string filename = baseFolderOfNodeJS + "chessboard.bmp"; //note that this will overwrite!
@@ -48,6 +55,20 @@ bool ChessGame::isThatColorTurn(const string& pieceName)
 	return true;
 }
 
+unordered_map<string, ChessPosition> ChessGame::switchPositionsAndPieces(const unordered_map<ChessPosition, string, ChessPositionHash>& positionsToPieces)
+{
+	unordered_map<string, ChessPosition> piecesToPositions; 
+	
+	piecesToPositions.reserve(positionsToPieces.size()); //calling this prevents time-wasting resizing
+
+	for (const auto& thePair : positionsToPieces)
+	{
+		piecesToPositions.insert({ thePair.second, thePair.first });
+	}
+
+	return piecesToPositions; 
+}
+
 string ChessGame::getPieceAtPosition(const ChessPosition& position) const
 {
 
@@ -66,11 +87,63 @@ string ChessGame::getPieceAtPosition(const ChessPosition& position) const
 
 void ChessGame::getPiecesToMoves()
 {
-	piecesToMoves.clear(); //
-
+	piecesToMoves.clear(); 
 
 	assert(boardImage.pieces.size() == boardImage.piecesToPositions.size());
+	//this assertion is here because of a damn tricky logic error (TYPO!) that I made at one point ...
 
+	for (const auto& piece : boardImage.pieces)
+	{
+		if (piecesToUpdate.find(piece) != piecesToUpdate.end())
+		{
+			updatePieceMoves(piece); 
+		}
+		piecesToMoves[piece] = cachedMoves[piece]; //a copy operation instead of having to go through `getMoves`
+	}
+
+	piecesToUpdate.clear(); 
+
+	/*
+	// Map to associate piece types with their corresponding move rules
+	
+	//try to implement caching - so that if moves available for a piece do not change 
+	// - no need to get that same move again!
+	static unordered_map<string, unique_ptr<AbstractMoveRules>> pieceTypeToRules;
+
+	if (pieceTypeToRules.empty())
+	{
+		pieceTypeToRules["whitePawn"] = make_unique<WhitePawnMoveRules>();
+		pieceTypeToRules["blackPawn"] = make_unique<BlackPawnMoveRules>();
+		pieceTypeToRules["King"] = make_unique<KingMoveRules>();
+		pieceTypeToRules["Knight"] = make_unique<KnightMoveRules>();
+		pieceTypeToRules["Rook"] = make_unique<RookMoveRules>();
+		pieceTypeToRules["Bishop"] = make_unique<BishopMoveRules>();
+		pieceTypeToRules["Queen"] = make_unique<QueenMoveRules>();
+	}
+
+	for (const auto& piece : boardImage.pieces)
+	{
+		ChessPosition position = boardImage.piecesToPositions[piece];
+		char file = position.file;
+		int rank = position.rank;
+
+		vector<ChessPosition> moves;
+		moves.reserve(8); // Preallocate space for moves
+
+		for (const auto& [pieceType, rules] : pieceTypeToRules)
+		{
+			if (piece.find(pieceType) != string::npos)
+			{
+				moves = rules->getMoves(file, rank, piece, *this);
+				piecesToMoves.insert({ piece, moves });
+				break;
+			}
+		}
+	}
+	*/
+
+	/*
+	
 	for (const auto& piece : boardImage.pieces)
 	{
 
@@ -136,8 +209,13 @@ void ChessGame::getPiecesToMoves()
 		}
 
 	}
+	*/
 
 }
+
+
+
+
 
 void ChessGame::showAllPossibleMoves()
 {
@@ -169,6 +247,8 @@ void ChessGame::showAllPossibleMoves()
 		}
 	}
 }
+
+
 
 array<ChessPosition, 2> ChessGame::getAndConfirmMove()
 {
@@ -218,7 +298,7 @@ void ChessGame::movePiece(const ChessPosition& oldPosition, const ChessPosition&
 			return;
 		}
 
-		if (!isPieceOnBoard(pieceName))
+		if (!boardImage.isPieceOnBoard(pieceName))
 		{
 			cout << pieceName << " not found\n";
 			return;
@@ -257,7 +337,7 @@ void ChessGame::movePiece(const ChessPosition& oldPosition, const ChessPosition&
 
 void ChessGame::movePieceHelper(const string& piece, const ChessPosition& newPosition)
 {
-	auto oldPosition = boardImage.piecesToPositions.find(pieceName)->second;
+	auto oldPosition = boardImage.piecesToPositions.find(piece)->second;
 	positionsToPieces.erase(oldPosition); //effectively makes the old square empty
 
 	string takenPieceName;
@@ -268,80 +348,24 @@ void ChessGame::movePieceHelper(const string& piece, const ChessPosition& newPos
 	{
 		//opponent must be there (UNLESS castling!) 
 		takenPieceName = positionsToPieces.at(newPosition);
-		takePiece(pieceName, newPosition);
+		takePiece(piece, newPosition);
 		pieceTaken = true;
 	}
 
 	//insert the piece at the new position
-	positionsToPieces.insert({ newPosition, pieceName });
+	positionsToPieces.insert({ newPosition, piece });
 
 	// Handle castling
-	if (pieceName.find("King") != string::npos)
+	if ((piece.find("white") != string::npos && !hasWhiteKingMoved && !hasWhiteRookMoved[0] && !hasWhiteRookMoved[1])
+		||
+		(piece.find("black") != string::npos && !hasBlackKingMoved && !hasBlackRookMoved[0] && !hasBlackRookMoved[1]))
 	{
-		if (pieceName.find("white") != string::npos)
-		{
-			whiteKingMoved = true;
-			if (newPosition == "G1")
-			{
-				// Kingside castling
-				movePieceHelper("whiteRookKSide", "F1");
-				whiteRookMoved[0] = true;
-			}
-			else if (newPosition == "C1")
-			{
-				// Queenside castling
-				movePieceHelper("whiteRookQSide", "D1");
-				whiteRookMoved[1] = true;
-			}
-		}
-		else if (pieceName.find("black") != string::npos)
-		{
-			blackKingMoved = true;
-			if (newPosition == "G8")
-			{
-				// Kingside castling
-				movePieceHelper("blackRookKSide", "F8");
-				blackRookMoved[0] = true;
-			}
-			else if (newPosition == "C8")
-			{
-				// Queenside castling
-				movePieceHelper("blackRookQSide", "D8");
-				blackRookMoved[1] = true;
-			}
-		}
+		handleCastling(piece, oldPosition, newPosition);
 	}
-	else if (pieceName.find("Rook") != string::npos)
-	{
-		if (pieceName.find("white") != string::npos)
-		{
-			if (oldPosition == "A1")
-			{
-				whiteRookMoved[1] = true;
-			}
-			else if (oldPosition == "H1")
-			{
-				whiteRookMoved[0] = true;
-			}
-		}
-		else if (pieceName.find("black") != string::npos)
-		{
-			if (oldPosition == "A8")
-			{
-				blackRookMoved[1] = true;
-			}
-			else if (oldPosition == "H8")
-			{
-				blackRookMoved[0] = true;
-			}
-		}
-	}
-
-
 
 	//clear piecesToPositions and then get its contents by using the "switch" function: 
 	boardImage.piecesToPositions.clear();
-	boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+	boardImage.piecesToPositions = switchPositionsAndPieces(positionsToPieces);
 
 	//once a piece has moved, possible positions change for ALL pieces, so clear the possible positions map
 	piecesToMoves.clear();
@@ -349,11 +373,11 @@ void ChessGame::movePieceHelper(const string& piece, const ChessPosition& newPos
 
 	/*Finally, check for check: */
 	/*IF the move puts friendly king in check, REJECT the move (early return) and REPROMPT the user for a move*/
-	if (checkForCheck(getPieceColor(pieceName)))
+	if (checkForCheck(sharedFunctions::getPieceColor(piece)))
 	{
 		//reversion to previous state - disallow move: 
 		positionsToPieces.erase(newPosition);
-		positionsToPieces.insert({ oldPosition, pieceName });
+		positionsToPieces.insert({ oldPosition, piece });
 
 		if (pieceTaken)
 		{
@@ -362,14 +386,14 @@ void ChessGame::movePieceHelper(const string& piece, const ChessPosition& newPos
 		}
 
 		boardImage.piecesToPositions.clear();
-		boardImage.piecesToPositions = switchMapKeysAndValues(positionsToPieces);
+		boardImage.piecesToPositions = switchPositionsAndPieces(positionsToPieces);
 		piecesToMoves.clear();
 		getPiecesToMoves();
 
-		cout << pieceName << " cannot move to " << newPosition << " because\n";
+		//cout << piece << " cannot move to " << newPosition.file << newPosition.rank << " because\n";
 
-		cout << "AFTER updating, " << getPieceColor(pieceName) << " is in check!\n";
-		cout << "- try another move!\n";
+		//cout << "AFTER updating, " << sharedFunctions::getPieceColor(piece) << " is in check!\n";
+		//cout << "- try another move!\n";
 
 		isKingInCheck = true; //the MAIN function checks for this flag
 		//if it is set, the `checkForMate` function is called (in main)
@@ -391,6 +415,222 @@ void ChessGame::movePieceHelper(const string& piece, const ChessPosition& newPos
 
 }
 
+
+void ChessGame::takePiece(const string& pieceName, const ChessPosition& newPosition)
+{
+	string opponentPieceName;
+
+	auto vectorIteratorOfPieceToTake =
+		std::find(boardImage.pieces.begin(), boardImage.pieces.end(),
+			positionsToPieces.find(newPosition)->second);
+
+	opponentPieceName = *vectorIteratorOfPieceToTake; //note the dereferenced iterator
+
+	//erase opponent from list of pieces: 
+	boardImage.pieces.erase(vectorIteratorOfPieceToTake);
+
+	//erase opponent from map
+	positionsToPieces.erase(newPosition);
+
+	//AND!
+	piecesToUpdate.insert(opponentPieceName); 
+	cachedMoves.erase(opponentPieceName); 
+}
+
+void ChessGame::handleCastling(const string& piece, const ChessPosition& oldPosition, const ChessPosition& newPosition)
+{
+	if (piece.find("King") != string::npos)
+	{
+		//castle(piece, newPosition)
+		if (piece.find("white") != string::npos)
+		{
+			hasWhiteKingMoved = true;
+			if (newPosition == ChessPosition{ 'G', 1 })
+			{
+				// Kingside castling
+				movePieceHelper("whiteRookKSide", ChessPosition{ 'F', 1 });
+				hasWhiteRookMoved[0] = true;
+			}
+		
+			else if (newPosition == ChessPosition{ 'C', 1 })
+			{
+				// Queenside castling
+				movePieceHelper("whiteRookQSide", ChessPosition{ 'D', 1 });
+				hasWhiteRookMoved[1] = true;
+			}
+		}
+		else if (piece.find("black") != string::npos)
+		{
+			hasBlackKingMoved = true;
+			if (newPosition == ChessPosition{ 'G', 8 })
+			{
+				// Kingside castling
+				movePieceHelper("blackRookKSide", ChessPosition{ 'F', 8 });
+				hasBlackRookMoved[0] = true;
+			}
+			else if (newPosition == ChessPosition{ 'C', 8 })
+			{
+				// Queenside castling
+				movePieceHelper("blackRookQSide", ChessPosition{ 'D', 8 });
+				hasBlackRookMoved[1] = true;
+			}
+		}
+	}
+	else if (piece.find("Rook") != string::npos)
+	{
+		if (piece.find("white") != string::npos)
+		{
+			if (oldPosition == ChessPosition{ 'A', 1 })
+			{
+				hasWhiteRookMoved[1] = true;
+			}
+			else if (oldPosition == ChessPosition{ 'H', 1 })
+			{
+				hasWhiteRookMoved[0] = true;
+			}
+		}
+		else if (piece.find("black") != string::npos)
+		{
+			if (oldPosition == ChessPosition{ 'A', 8 })
+			{
+				hasBlackRookMoved[1] = true;
+			}
+			else if (oldPosition == ChessPosition{ 'H', 8 })
+			{
+				hasBlackRookMoved[0] = true;
+			}
+		}
+	}
+}
+
+bool ChessGame::checkForCheck(const string& colorToCheckForCheck)
+{
+	string kingToCheckForCheck = colorToCheckForCheck + "King";
+	//first, find the king's position: 
+
+	//if any white piece has a possible position equal to the black king's position, black king is in check 
+
+	auto kingIterator = boardImage.piecesToPositions.find(kingToCheckForCheck);
+
+	if (kingIterator == boardImage.piecesToPositions.end())
+	{
+		return false; //waste no more time looking at the wrong color king 
+	}
+
+	auto positionOfKing = kingIterator->second;
+
+	for (const auto& currentPair : piecesToMoves)
+	{
+		if (currentPair.first.find(colorToCheckForCheck) == string::npos)//ex: white cannot put white in check 
+		{
+			for (const auto& possiblePosition : currentPair.second)
+			{
+				if (possiblePosition == positionOfKing)
+				{
+					//cout << "\033[31m"; //RED!
+					sharedFunctions::setTerminalColor(TerminalColor::Red);
+					cout << currentPair.first << " has " << kingToCheckForCheck << " in check\n";
+					//cout << "\033[0m";
+					sharedFunctions::setTerminalColor(TerminalColor::Default);
+
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool ChessGame::checkForMate(const string& colorToCheckForMate)
+{
+	//check for checkMATE: 
+	bool isCheckMATE = true;
+
+	//consider only the moves for the color under threat of mate 
+	map<string, vector<ChessPosition>> colorPiecesToMoves;
+	for (const auto& currentPair : piecesToMoves)
+	{
+		if (currentPair.first.find(colorToCheckForMate) != string::npos)
+		{
+			colorPiecesToMoves.insert({ currentPair.first, currentPair.second });
+		}
+	}
+
+	for (const auto& singlePieceToMoves : colorPiecesToMoves)
+		//for (int i = 0; i < piecesToMoves.size(); ++i)
+	{
+		if (isCheckMATE == false)
+		{
+			break;
+		}
+
+		const string& piece = singlePieceToMoves.first;
+		for (const ChessPosition& move : singlePieceToMoves.second)
+		{
+			movePieceHelper(piece, move);
+
+			if (isKingInCheck == false)
+			{
+				isCheckMATE = false;
+				break;
+			}
+		}
+	}
+
+	return isCheckMATE;
+}
+
+void ChessGame::play()
+{
+	do
+	{
+		callNodeJS(); 
+		openPort3000_andDisplayChessBoard(); 
+
+		cout << "Done clicking piece and spot to move it to? \n";
+		string response; 
+		getline(std::cin, response); 
+
+		array<ChessPosition, 2> chosenPositions = getAndConfirmMove();
+		ChessPosition chosenStart = chosenPositions.at(0);
+		ChessPosition chosenFinish = chosenPositions.at(1);
+
+		movePiece(chosenStart, chosenFinish);
+
+		if (isKingInCheck)
+		{
+			if (moveCount % 2 == 0)
+			{
+				isCheckMate = checkForMate("white");
+			}
+
+			else
+			{
+				isCheckMate = checkForMate("black");
+			}
+		}
+
+		if (isCheckMate)
+		{
+			break;
+		}
+	} 
+	while (!isCheckMate);
+
+	cout << "\n\n\nGame over!";
+	if (moveCount % 2 == 0)
+	{
+		cout << "Black won!\n";
+	}
+
+	else
+	{
+		cout << "WHITE won!\n";
+	}
+}
+
+
 void ChessGame::drawBoardHelper(const ChessPosition& oldPosition)
 {
 	//the image file stuff: 
@@ -401,6 +641,54 @@ void ChessGame::drawBoardHelper(const ChessPosition& oldPosition)
 	boardImage.writeImageFile(filename);
 }
 
+void ChessGame::updatePieceMoves(const string& piece)
+{
+	ChessPosition position = boardImage.piecesToPositions[piece];
+	char file = position.file;
+	int rank = position.rank;
+	
+
+	vector<ChessPosition> moves;
+	moves.reserve(8); // Preallocate space for moves 
+	
+	//(is 8 reasonable here??) 
+	//that is, on "average", does a piece have 8 spots available to it (certainly not true for pawns)...
+
+
+	//try to implement caching - so that if moves available for a piece do not change 
+	// - no need to get that same move again!
+	static unordered_map<string, unique_ptr<AbstractMoveRules>> pieceTypeToRules;
+
+	if (pieceTypeToRules.empty())
+	{
+		pieceTypeToRules["whitePawn"] = make_unique<WhitePawnMoveRules>();
+		pieceTypeToRules["blackPawn"] = make_unique<BlackPawnMoveRules>();
+		pieceTypeToRules["King"] = make_unique<KingMoveRules>();
+		pieceTypeToRules["Knight"] = make_unique<KnightMoveRules>();
+		pieceTypeToRules["Rook"] = make_unique<RookMoveRules>();
+		pieceTypeToRules["Bishop"] = make_unique<BishopMoveRules>();
+		pieceTypeToRules["Queen"] = make_unique<QueenMoveRules>();
+	}
+
+
+	for (const auto& [pieceType, rules] : pieceTypeToRules) //"structured binding" used here 
+	{
+		if (piece.find(pieceType) != string::npos)
+		{
+			moves = rules->getMoves(file, rank, piece, *this);
+			piecesToMoves.insert({ piece, moves });
+			break;
+		}
+	}
+	cachedMoves[piece] = moves; //does this need std::move()? 
+
+}
+
+void ChessGame::invalidateCache()
+{
+	cachedMoves.clear(); 
+	piecesToUpdate.clear(); 
+}
 
 
 #pragma region Abstract Move Rules
@@ -568,10 +856,10 @@ vector<ChessPosition> KingMoveRules::getMoves(char file, int rank, const string&
 	}
 
 	// Castling moves
-	if (piece.find("white") != string::npos && !game.whiteKingMoved)
+	if (piece.find("white") != string::npos && !game.hasWhiteKingMoved)
 	{
 		// Kingside castling
-		if (!game.whiteRookMoved[0] && game.getPieceAtPosition(ChessPosition{'F', 1}) == "" 
+		if (!game.hasWhiteRookMoved[0] && game.getPieceAtPosition(ChessPosition{'F', 1}) == "" 
 			&& game.getPieceAtPosition(ChessPosition{'G', 1}) == "")
 		{
 			//
@@ -581,7 +869,7 @@ vector<ChessPosition> KingMoveRules::getMoves(char file, int rank, const string&
 			//}
 		}
 		// Queenside castling
-		if (!game.whiteRookMoved[1] && game.getPieceAtPosition(ChessPosition{ 'B', 1 }) == ""
+		if (!game.hasWhiteRookMoved[1] && game.getPieceAtPosition(ChessPosition{ 'B', 1 }) == ""
 			&& game.getPieceAtPosition(ChessPosition{ 'C', 1 }) == "" && game.getPieceAtPosition(ChessPosition{ 'D', 1 }) == "")
 		{
 			//if (!game.checkForCheck("white"))// && !game.simulateMoveForCheck("E1", "D1", "white") && !game.simulateMoveForCheck("E1", "C1", "white"))
@@ -590,10 +878,10 @@ vector<ChessPosition> KingMoveRules::getMoves(char file, int rank, const string&
 			//}
 		}
 	}
-	else if (piece.find("black") != string::npos && !game.blackKingMoved)
+	else if (piece.find("black") != string::npos && !game.hasBlackKingMoved)
 	{
 		// Kingside castling
-		if (!game.blackRookMoved[0] && game.getPieceAtPosition(ChessPosition{ 'F', 8 }) == "" 
+		if (!game.hasBlackRookMoved[0] && game.getPieceAtPosition(ChessPosition{ 'F', 8 }) == "" 
 			&& game.getPieceAtPosition(ChessPosition{ 'G', 8 }) == "")
 		{
 			//if (!game.checkForCheck("black"))// && !game.simulateMoveForCheck("E8", "F8", "black") && !game.simulateMoveForCheck("E8", "G8", "black"))
@@ -602,7 +890,7 @@ vector<ChessPosition> KingMoveRules::getMoves(char file, int rank, const string&
 			//}
 		}
 		// Queenside castling
-		if (!game.blackRookMoved[1] && game.getPieceAtPosition(ChessPosition{ 'B', 8 }) == ""
+		if (!game.hasBlackRookMoved[1] && game.getPieceAtPosition(ChessPosition{ 'B', 8 }) == ""
 			&& game.getPieceAtPosition(ChessPosition{ 'C', 8 }) == "" && 
 			game.getPieceAtPosition(ChessPosition{ 'D', 8 }) == "")
 		{

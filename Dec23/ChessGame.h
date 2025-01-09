@@ -207,10 +207,10 @@ public:
 	bool isKingInCheck = false; 
 
 
-	bool whiteKingMoved = false;
-	bool blackKingMoved = false;
-	bool whiteRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
-	bool blackRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
+	bool hasWhiteKingMoved = false;
+	bool hasBlackKingMoved = false;
+	bool hasWhiteRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
+	bool hasBlackRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
 
 
 	ChessImageBMP boardImage;

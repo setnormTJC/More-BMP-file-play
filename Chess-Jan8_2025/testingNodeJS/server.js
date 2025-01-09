@@ -9,9 +9,6 @@ const port = 3000;
 
 // Define the absolute path to the directory where you want to save the file
 const fileDirectory = path.join(__dirname, 'public');
-// const lockFilePath = path.join(fileDirectory, 'lockfile.txt'); 
-
-//console.log(lockFilePath);
 
 app.use(express.json());
 app.use(express.static(fileDirectory));
@@ -38,12 +35,12 @@ app.post('/save-coordinates', express.text(), (req, res) =>
         {
             // fs.unlinkSync(lockFilePath); 
             res.json({message:'Coordinates saved'});
-            console.log("file written\n");
+            console.log("coordinates file written\n");
         }
     });
 });
 
 app.listen(port, () =>
 {
-    //console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 })
