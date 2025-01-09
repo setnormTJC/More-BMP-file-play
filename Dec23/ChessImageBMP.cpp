@@ -18,8 +18,6 @@ ChessImageBMP::ChessImageBMP()
 	//get INITIAL positions of all pieces 
 	piecesToPositions = getPiecesToInitialPositions(pieces);
 
-	//switch keys and values in the pieceToPosition map (may not be needed)
-	//initialPositionsToPieceNames = switchMapKeysAndValues(pieceNamesToPositions);
 
 	drawPieces(); 
 
@@ -53,10 +51,6 @@ void ChessImageBMP::drawEmptyChessBoard()
 
 	drawLetters();
 	drawNumbers();
-
-	/*Note: darkSquareColor ignored for now by drawRectangleOutline function def.*/
-	//drawRectangleOutline(0 + BORDER_SIZE, 0 + BORDER_SIZE,
-	//	boardDimension / 8, boardDimension / 8, Color{ 0xFF'00'00'00 });
 
 }
 

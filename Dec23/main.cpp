@@ -154,7 +154,7 @@ int main()
 
 
 
-		int desiredDepth = 4; //the ALL-IMPORTANT quantity ... 
+		int desiredDepth = 3; //the ALL-IMPORTANT quantity ... 
 
 
 
@@ -164,16 +164,22 @@ int main()
 		//	<< minimaxMove.first << " to " << minimaxMove.second << "\n";
 		cout << "Enable move suggestion (y/n)? \n";
 		string moveSuggestionResponse; 
-		getline(std::cin, moveSuggestionResponse);
+		
+		
+		//getline(std::cin, moveSuggestionResponse);
+		//if (moveSuggestionResponse == "y") 
 		
 
-		if (moveSuggestionResponse == "y") 
+		pair<string, string> minimaxAlphaBetaMove; 
+
+		if (moveSuggestionResponse == "") //goofy way of just getting suggestedMove w/o input
+
 		//desirable to skip if, ex, playing "standard" opening moves 
 		//ALSO desirable to skip if playing opponent (who will not take these suggestions) 
 		{
 			ofstream fout{ "howLongItTakes.txt", ios::app };
 			auto start = std::chrono::system_clock::now(); 
-			auto minimaxAlphaBetaMove = theGame.getMinimaxAlphaBetaMove(desiredDepth);
+			minimaxAlphaBetaMove = theGame.getMinimaxAlphaBetaMove(desiredDepth);
 
 
 			auto end = std::chrono::system_clock::now();
@@ -195,31 +201,44 @@ int main()
 		//write the time it took for getMinimaxAlphaBetaMove with given depth out to file (for comparison/benchmarking)
 	
 
-		string response;
-		displayOptions();
-		getline(std::cin, response);
+		//string response;
+		//displayOptions();
+		//getline(std::cin, response);
 
-		while (response != "1")
-		{
-			if (response == "2")
-			{
-				theGame.showAllPossibleMoves();
-			}
+		//while (response != "1")
+		//{
+		//	if (response == "2")
+		//	{
+		//		theGame.showAllPossibleMoves();
+		//	}
 
-			else
-			{
-				cout << "Unsupported option - enter 1 or 2 (for now)\n";
-			}
-			displayOptions();
-			getline(std::cin, response);
-		}
+		//	else
+		//	{
+		//		cout << "Unsupported option - enter 1 or 2 (for now)\n";
+		//	}
+		//	displayOptions();
+		//	getline(std::cin, response);
+		//}
 
-		auto theTwoChosenPositions = theGame.getAndConfirmMove();
+		//auto theTwoChosenPositions = theGame.getAndConfirmMove();
+		// 
+		//get location of piece selected to move by minimax: 
+		auto positionOfSuggestedPiece = theGame.boardImage.piecesToPositions.at(minimaxAlphaBetaMove.first);
+		
+		auto oldPositionAsCharAndInt = convertStringChessPositionToCharAndInt(positionOfSuggestedPiece); 
+		auto newPositionAsCharAndInt = convertStringChessPositionToCharAndInt(minimaxAlphaBetaMove.second);
 
-		theGame.movePiece(theTwoChosenPositions.at(0).first,
-			theTwoChosenPositions.at(0).second,
-			theTwoChosenPositions.at(1).first,
-			theTwoChosenPositions.at(1).second);
+		theGame.movePiece(oldPositionAsCharAndInt.first,
+			oldPositionAsCharAndInt.second,
+			newPositionAsCharAndInt.first,
+			newPositionAsCharAndInt.second); 
+
+		std::this_thread::sleep_for(std::chrono::seconds(1)); 
+
+		//theGame.movePiece(theTwoChosenPositions.at(0).first,
+		//	theTwoChosenPositions.at(0).second,
+		//	theTwoChosenPositions.at(1).first,
+		//	theTwoChosenPositions.at(1).second);
 
 		
 

@@ -7,7 +7,7 @@
 #include<iostream> 
 
 #include<map> 
-
+#include<unordered_map>
 #include<time.h> //for writing image file name as current system time (Windows-specific, I think)
 
 #include<fstream> 
@@ -17,9 +17,10 @@
 
 
 
-using std::vector, std::string, std::cout, std::map;
+using std::vector, std::string, std::cout, std::unordered_map;
 using std::getline; 
 using std::ifstream;
+using std::map; 
 
 
 
@@ -55,7 +56,7 @@ std::pair<char, int> convertStringChessPositionToCharAndInt(const string& chessP
 string convertCharAndIntChessPositionToString(const char file, const int rank);
 
 
-map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
+unordered_map<string, string> getPiecesToInitialPositions(const vector<string>& pieceNames);
 
 bool isPositionInBounds(char file, int rank);
 
@@ -69,18 +70,30 @@ string getPieceRelationship(const string& currentPiece, const string& contentsOf
 
 
 template<typename T1, typename T2> 
-map<T2, T1> switchMapKeysAndValues(map<T1, T2>& originalMap)
+unordered_map<T2, T1> switchMapKeysAndValues(unordered_map<T1, T2>& originalMap)
 {
-	map<T2, T1> switchedMap; 
+	unordered_map<T2, T1> switchedMap;
 
 	for (auto& pair : originalMap)
 	{
 		switchedMap.insert({ pair.second, pair.first });
 	}
 
-	return switchedMap; 
-}
+	return switchedMap;
+};
 
+template<typename T1, typename T2>
+map<T2, T1> switchMapKeysAndValues(map<T1, T2>& originalMap)
+{
+	map<T2, T1> switchedMap;
+
+	for (auto& pair : originalMap)
+	{
+		switchedMap.insert({ pair.second, pair.first });
+	}
+
+	return switchedMap;
+}
 
 
 

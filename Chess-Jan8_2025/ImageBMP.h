@@ -1,7 +1,6 @@
 #pragma once
 
-#include"sharedFunctions.h"
-
+#include<iostream> 
 #include<fstream> 
 #include <vector>
 #include<cassert>
@@ -12,9 +11,9 @@
 #include<iomanip> 
 #include<filesystem> 
 
-using std::cout, std::ifstream, std::ofstream, std::vector, std::string, std::ios, std::ostream, std::array; 
-using std::swap, std::map, std::pair, std::setw, std::left, std::to_string; 
-using std::unordered_map; 
+using std::cout, std::ifstream, std::ofstream, std::vector, std::string, std::ios, std::ostream, std::array;
+using std::swap, std::map, std::pair, std::setw, std::left;
+using std::unordered_map;
 
 class FileHeader
 {
@@ -33,7 +32,7 @@ public:
 
 	FileHeader() = default;
 
-	friend class ImageBMP; 
+	friend class ImageBMP;
 
 };
 
@@ -41,7 +40,7 @@ class InfoHeader
 {
 	unsigned int infoHeaderSize = 0x00'00'00'28; //indices 14 - 17, in bytes
 	short planes = 0x00'01; //indices 26 - 27 ["always" 1 (meaning unclear)] 
-	
+
 	short bitsPerPixel = 0x00'20; //CAREFUL! not always 32! -> indices 28 - 29 (32 bits - 24 for G,B,R, and 8 for Alpha)
 	unsigned int compressionMethod = 0x00'00'00'00; //indices 30 - 33
 	unsigned int sizeOfPixelData{};// = imageWidth * imageHeight * (bitsPerPixel / 8); //indices 34 - 37
@@ -62,33 +61,33 @@ public:
 	unsigned int getInfoHeaderSize() const;
 	unsigned int getSizeOfPixelData() const;
 
-	friend class ImageBMP; 
+	friend class ImageBMP;
 };
 
 /*NOTE: little-endian BGRA order is used here*/
 enum class ColorEnum : unsigned int
 {
 	//A, R, G, B
-	Black				=	0xFF'00'00'00,
-	White				=	0xFF'FF'FF'FF,
+	Black = 0xFF'00'00'00,
+	White = 0xFF'FF'FF'FF,
 
-	Red					=	0xFF'FF'00'00,
-	Green				=	0xFF'00'FF'00,
-	Blue				=	0xFF'00'00'FF,
+	Red = 0xFF'FF'00'00,
+	Green = 0xFF'00'FF'00,
+	Blue = 0xFF'00'00'FF,
 
-	Yellow				=	0xFF'FF'FF'00,
-	Cyan				=	0xFF'00'FF'FF,
-	Magenta				=	0xFF'FF'00'FF,
+	Yellow = 0xFF'FF'FF'00,
+	Cyan = 0xFF'00'FF'FF,
+	Magenta = 0xFF'FF'00'FF,
 
 	//chessboard-specific colors: 
-	DarkSquareColor		=	0xFF'BA'61'34,
-	LightSquareColor	=	0xFF'EF'D7'B5,
-	BoardBorder			=	0xFF'6C'1E'1C,
+	DarkSquareColor = 0xFF'BA'61'34,
+	LightSquareColor = 0xFF'EF'D7'B5,
+	BoardBorder = 0xFF'6C'1E'1C,
 
 	//using some images from this page: https://commons.wikimedia.org/wiki/Category:Chess_bitmap_pieces
-	WKnightBgrdColor	=	0xFF'FF'FF'CB,
+	WKnightBgrdColor = 0xFF'FF'FF'CB,
 
-	RedBgrd				=	0xFF'ED'1C'24
+	RedBgrd = 0xFF'ED'1C'24
 	//CopyWKnightBgrdColor = 0x00'00'00'00
 
 };
@@ -121,10 +120,10 @@ class ImageBMP
 	void readFileHeaderFromFile(ifstream& fin);
 	void readInfoHeaderFromFile(ifstream& fin);
 	void readPixelDataFromFile(ifstream& fin);
-public: 
+public:
 	FileHeader fileHeader;
-	InfoHeader infoHeader; 
-	PixelData pixelData; 
+	InfoHeader infoHeader;
+	PixelData pixelData;
 
 
 
@@ -136,13 +135,13 @@ public:
 
 	ImageBMP(unsigned int imageWidth, unsigned int imageHeight, const Color& fillColor);
 
-	ImageBMP(const string& filepath); 
+	ImageBMP(const string& filepath);
 
 	void readImageBMP(string inputFilename);
 
-	void doublescaleImageBMP(); 
+	void doublescaleImageBMP();
 
-	void drawRectangleOutline(unsigned int x0, unsigned int y0, 
+	void drawRectangleOutline(unsigned int x0, unsigned int y0,
 		unsigned int rectangleWidth, unsigned int rectangleHeight, const Color& color);
 
 	void fillRectangleWithColor(unsigned int x0, unsigned int y0,

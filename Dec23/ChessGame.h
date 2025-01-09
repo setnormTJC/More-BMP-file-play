@@ -19,7 +19,7 @@
 
 #include<future> //...MULTI-THREADING
 
-#include<numeric> 
+
 
 using std::unique_ptr, std::make_unique; 
 using std::sort; 
@@ -33,7 +33,7 @@ using std::future; //again- MULTI-THREADING
 struct Node
 {
 	/*anticipate that "data" will be piecesToMoves for ChessGame - since updating the board requires `pieceName`*/
-	map <string, vector<string>> data;
+	unordered_map <string, vector<string>> data;
 
 	//vector<Node*> childrenLinks; //former, manual memory mgmt approach
 	vector<unique_ptr<Node>> childrenLinks; 
@@ -52,7 +52,7 @@ public:
 
 	Tree();
 	/*anticipate that "data" will be piecesToMoves for ChessGame - since updating the board requires `pieceName`*/
-	Tree(const map <string, vector<string>>& data);
+	Tree(const unordered_map <string, vector<string>>& data);
 
 
 
@@ -68,12 +68,12 @@ class ChessGame
 {
 
 	/*********************************************private member variables***********************************/
-	ChessImageBMP boardImage;
+
 	//Tree gameTree; //don't need to STORE this for move prediction (and it will be a memory hog for sufficient tree depth) 
 
-	map<string, string> positionsToPieces;	
+	unordered_map<string, string> positionsToPieces;
 	/*ex: "whitePawnE2" will be mapped to {E3, E4} initially*/
-	map <string, vector<string>> piecesToMoves;
+	unordered_map <string, vector<string>> piecesToMoves;
 
 	int blackScore = 0;
 	int whiteScore = 0;
@@ -113,7 +113,36 @@ class ChessGame
 	void drawBoardHelper(const string& oldPosition);
 
 	/*Call this at the end of movePieceHelper if you want to see the gametree - not needed for good move prediction*/
-	void getGameTreeRecursively(Node& parentNode, map <string, vector<string>>& data, int currentDepth, int maxDepth, int moveCount);
+	void getGameTreeRecursively(Node& parentNode, unordered_map <string, vector<string>>& data, int currentDepth, int maxDepth, int moveCount);
+
+	//// New method to generate the game tree in parallel
+	//void generateGameTreeParallel(int depth) {
+	//	std::vector<std::future<void>> futures;
+	//	std::mutex mtx;
+
+	//	auto worker = [this, depth, &mtx](int start, int end) {
+	//		for (int i = start; i < end; ++i) {
+	//			// Lock the mutex to safely access shared data
+	//			std::lock_guard<std::mutex> lock(mtx);
+	//			// Generate the game tree for the current branch
+	//			generateGameTreeRecursively(rootNode, depth);
+	//		}
+	//		};
+
+	//	int numThreads = std::thread::hardware_concurrency();
+	//	int nodesPerThread = totalNodes / numThreads;
+
+	//	for (int i = 0; i < numThreads; ++i) {
+	//		int start = i * nodesPerThread;
+	//		int end = (i + 1) * nodesPerThread;
+	//		futures.push_back(std::async(std::launch::async, worker, start, end));
+	//	}
+
+	//	for (auto& future : futures) {
+	//		future.get();
+	//	}
+	//}
+
 
 	int minimax(Node& node, int depth, bool isMaximizingPlayer);
 
@@ -183,6 +212,8 @@ public:
 	bool whiteRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
 	bool blackRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
 
+
+	ChessImageBMP boardImage;
 
 	/********************************friend class(es)*******************************/
 	/*Applies "diagonal rule" to bishops, "L rule" to knights, etc.*/

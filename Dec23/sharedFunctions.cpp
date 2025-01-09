@@ -142,11 +142,11 @@ string convertCharAndIntChessPositionToString(const char file, const int rank)
 }
 
 
-map<string,string> getPiecesToInitialPositions(const vector<string>& pieceNames)
+unordered_map<string,string> getPiecesToInitialPositions(const vector<string>& pieceNames)
 {
 	auto chessPositions = getChessPositions(); 
 
-	map<string, string> pieceNamesToInitialPositions;
+	unordered_map<string, string> pieceNamesToInitialPositions;
 
 	//pieceNames (read from image files) are alphabetical
 	// (ex: blackBishopKside, blackBishopQSide, .. whiteBishop...whiteKing...whiteRook...etc)	

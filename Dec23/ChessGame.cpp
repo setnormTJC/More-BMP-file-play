@@ -977,7 +977,7 @@ void ChessGame::drawBoardHelper(const string& oldPosition)
 	boardImage.writeImageFile(filename);
 }
 
-void ChessGame::getGameTreeRecursively(Node& parentNode, map <string, vector<string>>& data, 
+void ChessGame::getGameTreeRecursively(Node& parentNode, unordered_map <string, vector<string>>& data,
 	int currentDepth, int maxDepth, int moveCount)
 {
 	//recursionCounter++; 
@@ -1563,7 +1563,7 @@ Tree::Tree()
 	depth = 1; 
 }	  
 
-Tree::Tree(const map <string, vector<string>> & data)
+Tree::Tree(const unordered_map <string, vector<string>> & data)
 {
 
 	//root.data = data; //former approach 

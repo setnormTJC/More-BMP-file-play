@@ -1,6 +1,6 @@
 #pragma once
-
 #include"ImageBMP.h"
+#include"sharedFunctions.h"
 
 
 /*Is a CHILD of ImageBMP - has additional methods for drawing a chessboard and its pieces*/
@@ -14,22 +14,20 @@ class ChessImageBMP : public ImageBMP
 
 
 	/*Ex: A1 is at 0,0; G8 is at 720, 720*/
-	map<string, pair<int, int> > positionsToImageCoordinates{};
+	unordered_map<ChessPosition, pair<int, int>, ChessPositionHash > positionsToImageCoordinates{};
 
 	/*This will be occupying significant space in memory*/
-	map<string, ImageBMP> piecesToImages;
+	unordered_map<string, ImageBMP> piecesToImages;
+
+	unordered_map<pair<int, int>, ChessPosition, PairHash> imageCoordinatesToPositions{};
+
+
 
 
 	/*Anticipate this function only being called by `drawPieces`*/
 	void drawPieceOnBoard(const vector<vector<Color>>& piecePixelMatrix, unsigned int x, unsigned int y);
 
 	void generatePositionsToImageCoordinatesMap();
-public:
-
-
-	ChessImageBMP();
-	//ChessImageBMP(bool isPie);
-	void drawEmptyChessBoard();
 
 	void drawA(unsigned int x, unsigned int y, const Color& color);
 	void drawB(unsigned int x, unsigned int y, const Color& color);
@@ -39,26 +37,31 @@ public:
 	/*for labeling ranks on chessboard*/
 	void drawNumbers();
 
+
+
+
+
+
+public:
+
+	ChessImageBMP();
+	void drawEmptyChessBoard();
+
 	/*Uses maps of pieceNames to images and pieceNames to coordinates - NOTE that neither of the maps is ALTERED by this method*/
-	void drawPieces(); 
+	void drawPieces();
 
-	void fillPositionWithColor(const string& position); 
+	ChessPosition convertImageCoordinatesToPosition(int x, int y);
 
+	void fillPositionWithColor(const ChessPosition& position);
 
 	/*NOTE: this method also RETURNS vector<string> pieceNames*/
-	vector<string> mapPiecesToImages_andReturnPieces(); 
-
-	pair<char, int> convertImageCoordinatesToPosition(int x, int y);
+	vector<string> mapPiecesToImages_andReturnPieces();
 
 
 	//public member vars********************************************/
 	vector<string> pieces;
 
-	unordered_map <string, string> piecesToPositions;
-
-	map<pair<int, int>, string> imageCoordinatesToPositions{};
-
+	unordered_map<string, ChessPosition> piecesToPositions; 
 
 };
-
 
