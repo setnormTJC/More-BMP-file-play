@@ -17,7 +17,7 @@ ChessGame::ChessGame()
 	//for caching of moves: 
 	for (const auto& piece : boardImage.pieces)
 	{
-		piecesToUpdate.insert(piece); 
+		piecesToUpdate.insert(piece);
 	}
 
 	getPiecesToMoves();
@@ -101,7 +101,7 @@ void ChessGame::getPiecesToMoves()
 		piecesToMoves[piece] = cachedMoves[piece]; //a copy operation instead of having to go through `getMoves`
 	}
 
-	piecesToUpdate.clear(); 
+	//piecesToUpdate.clear(); 
 
 	/*
 	// Map to associate piece types with their corresponding move rules
@@ -316,8 +316,15 @@ void ChessGame::movePiece(const ChessPosition& oldPosition, const ChessPosition&
 
 		if (newPositionIterator == piecesToMoves.at(pieceName).end())
 		{
-			cout << newPosition.file << newPosition.rank << " is not an allowed position for " << pieceName
-				<< " - the position is either occupied by a friend, or " << pieceName << " cannot move in that way\n";
+			cout << newPosition.file << newPosition.rank << " is not an allowed position for " << pieceName << "\n";
+
+			cout << "Here is the board in ASCII format:\n";
+			displayBoardASCII(); 
+
+
+			//cout << "Because ...:"
+			//
+			//	<< " - the position is either occupied by a friend, or " << pieceName << " cannot move in that way\n";
 			return;
 		}
 
@@ -528,10 +535,10 @@ bool ChessGame::checkForCheck(const string& colorToCheckForCheck)
 				if (possiblePosition == positionOfKing)
 				{
 					//cout << "\033[31m"; //RED!
-					sharedFunctions::setTerminalColor(TerminalColor::Red);
-					cout << currentPair.first << " has " << kingToCheckForCheck << " in check\n";
-					//cout << "\033[0m";
-					sharedFunctions::setTerminalColor(TerminalColor::Default);
+					//sharedFunctions::setTerminalColor(TerminalColor::Red);
+					//cout << currentPair.first << " has " << kingToCheckForCheck << " in check\n";
+					////cout << "\033[0m";
+					//sharedFunctions::setTerminalColor(TerminalColor::Default);
 
 					return true;
 				}
@@ -631,6 +638,7 @@ void ChessGame::play()
 }
 
 
+
 void ChessGame::drawBoardHelper(const ChessPosition& oldPosition)
 {
 	//the image file stuff: 
@@ -639,6 +647,44 @@ void ChessGame::drawBoardHelper(const ChessPosition& oldPosition)
 	string baseFolderOfNodeJS = "testingNodeJS/public/";
 	string filename = baseFolderOfNodeJS + "chessboard.bmp"; //note that this will overwrite!
 	boardImage.writeImageFile(filename);
+}
+void ChessGame::displayBoardASCII() const
+{
+	// Create an 8x8 board filled with empty spaces
+	char board[8][8];
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int j = 0; j < 8; ++j)
+		{
+			board[i][j] = '.';
+		}
+	}
+
+	// Fill the board with pieces
+	for (const auto& positionToPiece : positionsToPieces)
+	{
+		const ChessPosition& position = positionToPiece.first;
+		const string& piece = positionToPiece.second;
+
+		int row = 8 - position.rank; // Convert rank to row index
+		int col = position.file - 'A'; // Convert file to column index
+
+		// Use the first character of the piece name for simplicity
+		board[row][col] = piece[0];
+	}
+
+	// Print the board
+	cout << "  A B C D E F G H\n";
+	for (int i = 0; i < 8; ++i)
+	{
+		cout << 8 - i << " ";
+		for (int j = 0; j < 8; ++j)
+		{
+			cout << board[i][j] << " ";
+		}
+		cout << 8 - i << "\n";
+	}
+	cout << "  A B C D E F G H\n";
 }
 
 void ChessGame::updatePieceMoves(const string& piece)

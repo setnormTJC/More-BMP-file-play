@@ -26,25 +26,11 @@ class ChessGame
 	bool hasBlackRookMoved[2] = { false, false }; // [0] for kingside, [1] for queenside
 
 
-	bool isKingInCheck = false;
-	bool isCheckMate = false;
-
 
 
 	/*********************************************private member functions***********************************/
 	bool isThatColorTurn(const string& pieceName);
 	bool isPieceOnBoard(const string& pieceName);
-
-	/*this method gets input from localhost::3000
-	through the input file that MUST be at relative filepath: testingNodeJS/public/clickCoordinates.txt
-	*/
-	array<ChessPosition, 2> getAndConfirmMove();
-
-	/*Note: movePiece calls movePieceHelper - which will potentially update isKingInCheck*/
-	void movePiece(const ChessPosition& oldPosition, const ChessPosition& newPosition);
-
-	bool checkForMate(const string& colorToCheckForMate);
-
 
 	/*Note: this is the only method that modifies has..KingMoved, has...RookMoved*/
 	void handleCastling(const string& piece, const ChessPosition& oldPosition, const ChessPosition& newPosition);
@@ -54,7 +40,7 @@ class ChessGame
 	void drawBoardHelper(const ChessPosition& oldPosition);
 
 
-
+	void displayBoardASCII() const;
 
 	/****PROTECTED member vars - accessible to AIChessGame child class*******************/
 protected: 
@@ -70,6 +56,9 @@ protected:
 	unordered_map<string, vector<ChessPosition>> cachedMoves;
 	unordered_set<string> piecesToUpdate;
 
+	bool isKingInCheck = false;
+	bool isCheckMate = false;
+
 
 	/****protected functions - accessible to AIChessGame child class*******************/
 	void takePiece(const string& piece, const ChessPosition& newPosition);
@@ -81,7 +70,19 @@ protected:
 	bool checkForCheck(const string& colorToCheckForCheck);
 
 	void updatePieceMoves(const string& piece);
+	/*I have yet to figure out a good circumstance to call this for ... */
 	void invalidateCache();
+	
+
+	/*this method gets input from localhost::3000
+	through the input file that MUST be at relative filepath: testingNodeJS/public/clickCoordinates.txt
+	*/
+	array<ChessPosition, 2> getAndConfirmMove();
+
+	/*Note: movePiece calls movePieceHelper - which will potentially update isKingInCheck*/
+	void movePiece(const ChessPosition& oldPosition, const ChessPosition& newPosition);
+
+	bool checkForMate(const string& colorToCheckForMate);
 
 
 public:
@@ -95,8 +96,10 @@ public:
 
 	void showAllPossibleMoves();
 
-	void play(); 
+	/*ChessGame's play functionality extended by AIChessGame child - which incorporates move suggestion*/
+	virtual void play(); 
 
+	
 	/*Applies "diagonal rule" to bishops, "L rule" to knights, etc.*/
 	friend class AbstractMoveRules;
 	/*Also give KingMoveRules friendship (for access to has...KingMoved and has...RookMoved*/

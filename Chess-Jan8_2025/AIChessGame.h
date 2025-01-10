@@ -7,8 +7,13 @@
 #include<sstream> //Copilot suggested use of stringstream for hashing board state 
 
 
+#include<future>
+#include<mutex>
 
-using std::sort; 
+
+using std::sort, std::future, std::async, std::mutex; 
+
+
 
 /*Tree class will be made of nodes*/
 struct Node
@@ -53,6 +58,18 @@ class AIChessGame :public ChessGame
 	unordered_map<string, int> cacheTable;
 
 	/******************private functions*************************/
+	void getGameTreeRecursively(Node& parentNode, unordered_map <string, vector<ChessPosition >>& piecesToMoves,
+		int currentDepth, int maxDepth, int moveCount);
+
+	/*An overload that works in alpha beta pruning BEFORE minimax*/
+	void getGameTreeRecursively(Node& parentNode, unordered_map <string, vector<ChessPosition >>& piecesToMoves,
+		int currentDepth, int maxDepth, int moveCount, int alpha, int beta);
+
+	
+	void parallelGetGameTreeRecursively(Node& parentNode, unordered_map <string, vector<ChessPosition >>& piecesToMoves,
+		int currentDepth, int maxDepth, int moveCount, int alpha, int beta);
+
+
 	vector<ChessPosition> orderMoves(const vector<ChessPosition>& moves, const string& piece);
 
 	/*Used by getMinimaxAlphaBetaMove - might consider moving this func. to ChessGame parent class ...*/
@@ -76,6 +93,18 @@ class AIChessGame :public ChessGame
 	*/
 	int evaluateGameState();
 
+	/*
+	@returns 0 if no fork is present, lesser (least?) pieceValue if fork IS present for `piece` in its moveset 
+	*/
+	int calculateForkBonus(const ChessPosition& position, const string& piece);
+
+	/*
+	NOTE: anticipate this function only being called for queen, rook, bishop (inside the `evaluateGameState` function)
+	*/
+	int calculatePinBonus(const ChessPosition& position, const string& piece);
+
+	unsigned short calculatePenaltyForDoubledPawn(const ChessPosition& position, const string& piece);
+
 	/*called by `evaluateGameState`
 	* @params firstLetterOfPieceName will be either 'w' or 'b' -> this is hopefully a fast way to do this...
 	*/
@@ -84,10 +113,10 @@ class AIChessGame :public ChessGame
 public: 
 	AIChessGame(); 
 
+	virtual void play() override; 
 
-	/*public for now - move to private later*/
-	void getGameTreeRecursively(Node& parentNode, unordered_map <string, vector<ChessPosition >> &piecesToMoves, 
-		int currentDepth, int maxDepth, int moveCount);
+	void displayGameOptions(); 
+
 
 	pair<string, ChessPosition> getMinimaxAlphaBetaMove(const short desiredDepth);
 

@@ -8,20 +8,15 @@
 int main()
 {
 	
-	//ChessGame theGame{}; 
-
-	//theGame.play(); 
-
 	AIChessGame theGame{};
-	//theGame.play(); 
 	
-	//theGame.getGameTreeRecursively()
-
-	//theGame.getMinimaxMove(2); 
 
 	/*get first suggested move (benchmarking minimaxAlphaBeta efficiency)*/
-	pair<string, ChessPosition> suggestedMove = theGame.getMinimaxAlphaBetaMove(5); 
+	//pair<string, ChessPosition> suggestedMove = theGame.getMinimaxAlphaBetaMove(5); 
 
-	cout << suggestedMove.first << " -> " << suggestedMove.second.file << suggestedMove.second.rank << "\n";
+	//cout << suggestedMove.first << " -> " << suggestedMove.second.file << suggestedMove.second.rank << "\n";
+
+
+	theGame.play();
 
 }

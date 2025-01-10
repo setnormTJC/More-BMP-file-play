@@ -252,6 +252,6 @@ string getPieceColor(const string& fullPieceName)
 
 void sharedFunctions::setTerminalColor(TerminalColor color)
 {
-	cout << "\033" << static_cast<int>(color) << "m";
+	cout << "\033[" << static_cast<int>(color) << "m";
 }
 
